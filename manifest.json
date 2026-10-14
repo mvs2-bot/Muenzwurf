@@ -1,7 +1,7 @@
 {
   "name": "Münzwurf – Entscheidungshilfe",
   "short_name": "Münzwurf",
-  "description": "Münze mehrfach werfen und Option A oder B entscheiden lassen",
+  "description": "Münze werfen – dazu Würfel, Glücksrad, „Wer zahlt?“ und Team-Auslosung",
   "lang": "de",
   "start_url": "./",
   "scope": "./",
@@ -10,7 +10,63 @@
   "background_color": "#0f172a",
   "theme_color": "#0f172a",
   "icons": [
-    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
-    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "maskable" }
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Würfel",
+      "url": "./#wuerfel",
+      "icons": [
+        {
+          "src": "icon.svg",
+          "sizes": "any",
+          "type": "image/svg+xml"
+        }
+      ]
+    },
+    {
+      "name": "Glücksrad",
+      "url": "./#rad",
+      "icons": [
+        {
+          "src": "icon.svg",
+          "sizes": "any",
+          "type": "image/svg+xml"
+        }
+      ]
+    },
+    {
+      "name": "Wer zahlt?",
+      "url": "./#zahlt",
+      "icons": [
+        {
+          "src": "icon.svg",
+          "sizes": "any",
+          "type": "image/svg+xml"
+        }
+      ]
+    },
+    {
+      "name": "Team-Auslosung",
+      "url": "./#teams",
+      "icons": [
+        {
+          "src": "icon.svg",
+          "sizes": "any",
+          "type": "image/svg+xml"
+        }
+      ]
+    }
   ]
 }
