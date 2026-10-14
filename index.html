@@ -19,19 +19,19 @@
     --line: #e7e2d8;
     --c0: #0d9488; --c1: #ea580c; --c2: #7c3aed; --c3: #db2777; --c4: #2563eb; --c5: #65a30d;
     --gold1: #fde68a; --gold2: #f59e0b; --gold3: #b45309; --shadow: 0 10px 30px rgba(28,25,23,.10);
-    --radius: 18px;
+    --radius: 18px; --on-c: #ffffff;
   }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
       --bg: #0f172a; --bg2: #111c33; --card: #16213b; --text: #f1f5f9; --muted: #94a3b8; --line: #263452;
       --c0: #2dd4bf; --c1: #fb923c; --c2: #a78bfa; --c3: #f472b6; --c4: #60a5fa; --c5: #a3e635;
-      --shadow: 0 10px 30px rgba(0,0,0,.35);
+      --shadow: 0 10px 30px rgba(0,0,0,.35); --on-c: #0f172a;
     }
   }
   :root[data-theme="dark"] {
     --bg: #0f172a; --bg2: #111c33; --card: #16213b; --text: #f1f5f9; --muted: #94a3b8; --line: #263452;
     --c0: #2dd4bf; --c1: #fb923c; --c2: #a78bfa; --c3: #f472b6; --c4: #60a5fa; --c5: #a3e635;
-    --shadow: 0 10px 30px rgba(0,0,0,.35);
+    --shadow: 0 10px 30px rgba(0,0,0,.35); --on-c: #0f172a;
   }
 
   * { box-sizing: border-box; }
@@ -208,20 +208,110 @@
     100% { opacity: 0; transform: translate(var(--x), var(--y)) rotate(var(--r)); }
   }
 
+  /* ---------- Weitere Werkzeuge ---------- */
+  .brand a { color: inherit; text-decoration: none; display: flex; align-items: center; gap: 10px; }
+  #backBtn { text-decoration: none; color: inherit; font-weight: 800; padding: 7px 12px; }
+  .view[hidden], #backBtn[hidden] { display: none; }
+
+  section.tools { margin-top: 22px; }
+  .tool-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .tool {
+    display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 12px 4px 10px;
+    background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+    color: inherit; text-decoration: none; font-weight: 800; font-size: .82rem; text-align: center;
+    transition: transform .12s;
+  }
+  .tool:active { transform: scale(.96); }
+  .tool .tool-ico { font-size: 1.6rem; line-height: 1; }
+
+  .sec-gap { margin-top: 18px; }
+  .chip-row { display: flex; flex-wrap: wrap; gap: 8px; }
+  .letter.num { font-size: .85rem; }
+  .opt-row.hot input { background: linear-gradient(135deg, var(--gold1), var(--gold2)); color: #451a03; border-color: var(--gold3) !important; }
+  .opt-row.hot .letter { transform: scale(1.15); }
+  .opt-row .letter { transition: transform .1s; }
+  textarea {
+    width: 100%; padding: 11px 12px; border-radius: 12px; border: 2px solid var(--line); resize: vertical;
+    background: var(--bg2); font: inherit; font-weight: 700; color: inherit; outline: none; line-height: 1.45;
+  }
+  .lbl .cnt { text-transform: none; letter-spacing: 0; font-weight: 600; }
+
+  /* Würfel */
+  .dice-stage { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; min-height: 92px; align-items: center; margin-top: 20px; }
+  .die {
+    width: 68px; height: 68px; border-radius: 16px; position: relative;
+    background: var(--bg2); border: 2.5px solid var(--line); box-shadow: var(--shadow);
+    display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 1.7rem;
+    font-variant-numeric: tabular-nums;
+  }
+  .die.pips { display: grid; grid-template: repeat(3, 1fr) / repeat(3, 1fr); padding: 9px; }
+  .die.pips i { width: 12px; height: 12px; border-radius: 50%; align-self: center; justify-self: center; }
+  .die.pips i.on { background: var(--text); }
+  .die small { position: absolute; bottom: 3px; left: 0; right: 0; text-align: center; font-size: .55rem; font-weight: 800; color: var(--muted); }
+  .die.rolling { animation: shake .28s infinite; }
+  .die.landed { animation: tIn .3s; }
+  @keyframes shake {
+    0%, 100% { transform: rotate(0) translate(0, 0); }
+    25% { transform: rotate(-12deg) translate(-3px, -4px); }
+    75% { transform: rotate(10deg) translate(3px, -2px); }
+  }
+  .dice-sum { text-align: center; margin-top: 14px; min-height: 2.6em; }
+  .dice-sum b { display: block; font-size: 2.2rem; font-weight: 900; line-height: 1.1; font-variant-numeric: tabular-nums; }
+  .dice-sum span { color: var(--muted); font-size: .9rem; }
+  .mini-hist { display: grid; gap: 6px; }
+  .mini-item {
+    display: flex; justify-content: space-between; gap: 10px; background: var(--card); border: 1px solid var(--line);
+    border-radius: 12px; padding: 9px 14px; font-size: .9rem; font-variant-numeric: tabular-nums;
+  }
+  .mini-item span { color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  /* Glücksrad */
+  .wheel-wrap { position: relative; width: min(100%, 320px); aspect-ratio: 1; margin: 6px auto 0; }
+  #wheel { width: 100%; height: 100%; display: block; transform: rotate(0deg); filter: drop-shadow(0 8px 18px rgba(0,0,0,.18)); }
+  #wheel text { fill: var(--on-c); font-weight: 800; dominant-baseline: central; pointer-events: none; }
+  .wheel-pointer {
+    position: absolute; top: -6px; left: 50%; transform: translateX(-50%); z-index: 2;
+    width: 0; height: 0; border-left: 15px solid transparent; border-right: 15px solid transparent;
+    border-top: 28px solid var(--text); filter: drop-shadow(0 2px 2px rgba(0,0,0,.3));
+  }
+  .wheel-hub {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 22%; aspect-ratio: 1;
+    border-radius: 50%; border: 0; cursor: pointer; font-size: 1.5rem;
+    background: radial-gradient(circle at 35% 30%, #fff7d6 0%, var(--gold1) 30%, var(--gold2) 80%, var(--gold3) 100%);
+    box-shadow: 0 3px 10px rgba(0,0,0,.3), inset 0 0 0 4px rgba(180,83,9,.45);
+  }
+
+  /* Teams */
+  .team-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-top: 18px; }
+  .team { background: var(--card); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
+  .team h3 { margin: 0; padding: 8px 12px; color: #fff; font-size: .95rem; }
+  .team ol { margin: 0; padding: 8px 12px 10px 32px; font-weight: 700; }
+  .team li { padding: 2px 0; overflow-wrap: anywhere; }
+  .team-actions { display: flex; justify-content: center; gap: 10px; margin-top: 12px; }
+  .team-actions .btn { padding: 10px 16px; }
+
+  /* Ergebnis-Pop-Over der Werkzeuge */
+  .res-emoji { font-size: 3.2rem; line-height: 1; margin-bottom: 8px; }
+  .res-extra { grid-column: 1 / -1; }
+
   @media (prefers-reduced-motion: reduce) {
     .coin.spinning { animation-duration: 2.4s; }
     .confetti { display: none; }
+    .die.rolling { animation: none; }
   }
 </style>
 </head>
 <body>
 
 <header>
-  <div class="brand"><img src="icon.svg" alt=""> Münzwurf</div>
+  <div class="brand">
+    <a class="icon-btn" id="backBtn" href="./" aria-label="Zurück zum Münzwurf" hidden>‹</a>
+    <img src="icon.svg" alt="" id="brandIcon"> <span id="brandTitle">Münzwurf</span>
+  </div>
   <button class="icon-btn" id="themeBtn" aria-label="Hell/Dunkel umschalten">🌙</button>
 </header>
 
-<main>
+<main class="view" id="view-coin">
   <div class="card">
     <div class="opt-head">
       <span class="lbl">Optionen</span>
@@ -248,6 +338,16 @@
     <button class="go" id="goBtn">🪙 Münze werfen</button>
   </div>
 
+  <section class="tools">
+    <div class="hist-head"><h2>Weitere Entscheidungshelfer</h2></div>
+    <nav class="tool-grid">
+      <a class="tool" href="#wuerfel"><span class="tool-ico">🎲</span>Würfel</a>
+      <a class="tool" href="#rad"><span class="tool-ico">🎡</span>Glücksrad</a>
+      <a class="tool" href="#zahlt"><span class="tool-ico">💸</span>Wer zahlt?</a>
+      <a class="tool" href="#teams"><span class="tool-ico">👥</span>Teams</a>
+    </nav>
+  </section>
+
   <section class="history">
     <div class="hist-head">
       <h2>Letzte Ergebnisse</h2>
@@ -255,6 +355,69 @@
     </div>
     <div class="hist-list" id="histList"></div>
   </section>
+</main>
+
+<!-- Würfel -->
+<main class="view" id="view-wuerfel" hidden>
+  <div class="card">
+    <span class="lbl">Anzahl Würfel</span>
+    <div class="chip-row" id="diceCount"></div>
+    <span class="lbl sec-gap">Würfelart</span>
+    <div class="chip-row" id="diceSides"></div>
+    <div class="dice-stage" id="diceStage"></div>
+    <div class="dice-sum" id="diceSum"></div>
+    <button class="go" id="diceGo">🎲 Würfeln</button>
+  </div>
+  <section class="history">
+    <div class="hist-head">
+      <h2>Letzte Würfe</h2>
+      <button class="link-btn" id="diceClear">Löschen</button>
+    </div>
+    <div class="mini-hist" id="diceHist"></div>
+  </section>
+</main>
+
+<!-- Glücksrad -->
+<main class="view" id="view-rad" hidden>
+  <div class="card">
+    <div class="wheel-wrap">
+      <div class="wheel-pointer"></div>
+      <svg id="wheel" viewBox="-100 -100 200 200" role="img" aria-label="Glücksrad"></svg>
+      <button class="wheel-hub" id="wheelHub" aria-label="Rad drehen">🎡</button>
+    </div>
+    <button class="go" id="wheelGo">🎡 Rad drehen</button>
+  </div>
+  <div class="card sec-gap">
+    <span class="lbl">Felder</span>
+    <div class="opt-list" id="wheelList"></div>
+    <div class="opt-tools"><button class="small-btn" id="wheelAdd">＋ Feld hinzufügen</button></div>
+  </div>
+</main>
+
+<!-- Wer zahlt? -->
+<main class="view" id="view-zahlt" hidden>
+  <div class="card">
+    <span class="lbl">Wer ist dabei?</span>
+    <div class="opt-list" id="payList"></div>
+    <div class="opt-tools"><button class="small-btn" id="payAdd">＋ Person hinzufügen</button></div>
+    <button class="go" id="payGo">💸 Wer zahlt?</button>
+  </div>
+</main>
+
+<!-- Team-Auslosung -->
+<main class="view" id="view-teams" hidden>
+  <div class="card">
+    <label class="lbl" for="teamNames">Namen <span class="cnt" id="teamCnt"></span></label>
+    <textarea id="teamNames" rows="7" placeholder="Ein Name pro Zeile (oder mit Komma getrennt)"></textarea>
+    <span class="lbl sec-gap">Anzahl Teams</span>
+    <div class="chip-row" id="teamCount"></div>
+    <div class="hint" id="teamHint"></div>
+    <button class="go" id="teamGo">👥 Teams auslosen</button>
+  </div>
+  <section class="team-grid" id="teamOut"></section>
+  <div class="team-actions" id="teamActions" hidden>
+    <button class="btn" id="teamCopy">📋 Kopieren</button>
+  </div>
 </main>
 
 <footer>Zufall per <code>crypto.getRandomValues</code> · gespeichert nur auf diesem Gerät</footer>
@@ -293,6 +456,22 @@
   </div>
 </dialog>
 
+<!-- Pop-Over: Ergebnis der Werkzeuge (Glücksrad, Wer zahlt?) -->
+<dialog id="toolDlg">
+  <div class="pop">
+    <div class="confetti" id="toolConfetti"></div>
+    <div class="res-emoji" id="tdEmoji"></div>
+    <div class="res-label" id="tdLabel"></div>
+    <div class="res-win" id="tdWin"></div>
+    <div class="res-sub" id="tdSub"></div>
+    <div class="actions">
+      <button class="btn" id="tdClose">Schließen</button>
+      <button class="btn primary" id="tdAgain">Nochmal</button>
+      <button class="link-btn res-extra" id="tdExtra" hidden></button>
+    </div>
+  </div>
+</dialog>
+
 <script>
 (() => {
   const $ = s => document.querySelector(s);
@@ -302,7 +481,7 @@
   };
   const HIST_MAX = 50, N_MAX = 999, OPT_MAX = 6;
   const LETTERS = 'ABCDEF';
-  const col = i => `var(--c${i})`;
+  const col = i => `var(--c${i % 6})`;
   const defName = i => 'Option ' + LETTERS[i];
 
   /* ---------- Echter Zufall (kryptografisch, ohne Verzerrung) ---------- */
@@ -541,10 +720,10 @@
     if (celebrate && winner >= 0) confetti(winner);
   }
 
-  function confetti(winner) {
-    const c = $('#confetti'); c.innerHTML = '';
+  function confetti(winner, box = '#confetti') {
+    const c = $(box); c.innerHTML = '';
     const cs = getComputedStyle(document.documentElement);
-    const colors = [cs.getPropertyValue('--c' + winner), '#fde68a', '#f59e0b', '#ffffff'];
+    const colors = [cs.getPropertyValue('--c' + (winner % 6)), '#fde68a', '#f59e0b', '#ffffff'];
     for (let i = 0; i < 28; i++) {
       const p = document.createElement('i');
       const ang = (i / 28) * Math.PI * 2, dist = 90 + randomInt(90);
@@ -594,6 +773,333 @@
     if (confirm('Alle gespeicherten Ergebnisse löschen?')) { LS.set('mw.history', []); renderHistory(); }
   });
   renderHistory();
+
+  /* =====================================================================
+     Weitere Entscheidungshelfer: Würfel, Glücksrad, Wer zahlt?, Teams
+     ===================================================================== */
+
+  /* ---------- Navigation (#wuerfel, #rad, #zahlt, #teams) ---------- */
+  const TOOLS = { wuerfel: '🎲 Würfel', rad: '🎡 Glücksrad', zahlt: '💸 Wer zahlt?', teams: '👥 Team-Auslosung' };
+  const toolDlg = $('#toolDlg'), backBtn = $('#backBtn');
+  let view = 'coin', fromHome = false;
+
+  function route() {
+    const h = location.hash.slice(1);
+    view = TOOLS[h] ? h : 'coin';
+    document.querySelectorAll('.view').forEach(m => m.hidden = m.id !== 'view-' + view);
+    backBtn.hidden = view === 'coin';
+    $('#brandIcon').hidden = view !== 'coin';
+    $('#brandTitle').textContent = view === 'coin' ? 'Münzwurf' : TOOLS[view];
+    document.title = view === 'coin' ? 'Münzwurf' : TOOLS[view].replace(/^\S+ /, '') + ' · Münzwurf';
+    if (view === 'coin') fromHome = false;
+    if (resDlg.open) resDlg.close();
+    if (toolDlg.open) toolDlg.close();
+    if (view === 'rad') drawWheel();
+    scrollTo(0, 0);
+  }
+  document.querySelectorAll('.tool').forEach(a => a.addEventListener('click', () => { fromHome = true; }));
+  backBtn.addEventListener('click', e => {
+    e.preventDefault();
+    if (fromHome) history.back();
+    else { history.pushState(null, '', location.pathname + location.search); route(); }
+  });
+  addEventListener('hashchange', route);
+
+  /* ---------- Ergebnis-Pop-Over der Werkzeuge ---------- */
+  let toolAgain = null, toolExtra = null;
+  function showToolResult({ emoji, label, win, color, sub, again, extra }) {
+    $('#tdEmoji').textContent = emoji;
+    $('#tdLabel').textContent = label;
+    $('#tdWin').textContent = win; $('#tdWin').style.color = col(color);
+    $('#tdSub').textContent = sub;
+    toolAgain = again; toolExtra = extra ? extra.fn : null;
+    $('#tdExtra').hidden = !extra; if (extra) $('#tdExtra').textContent = extra.text;
+    toolDlg.showModal();
+    confetti(color, '#toolConfetti');
+    if (navigator.vibrate) navigator.vibrate([40, 60, 90]);
+  }
+  $('#tdClose').addEventListener('click', () => toolDlg.close());
+  $('#tdAgain').addEventListener('click', () => { toolDlg.close(); toolAgain?.(); });
+  $('#tdExtra').addEventListener('click', () => { toolDlg.close(); toolExtra?.(); });
+  toolDlg.addEventListener('click', e => { if (e.target === toolDlg) toolDlg.close(); });
+
+  /* ---------- Bearbeitbare Namensliste (Glücksrad, Wer zahlt?) ---------- */
+  function makeList(el, addBtn, store, def, { min, max, ph, change }) {
+    const items = LS.get(store, def).slice(0, max);
+    while (items.length < min) items.push('');
+    const persist = () => LS.set(store, items.map(s => (s || '').trim()));
+    const api = {
+      rows: [],
+      names: () => items.map((s, i) => (s || '').trim() || ph(i)),
+      render(focusIdx, silent) {
+        el.innerHTML = '';
+        api.rows = items.map((v, i) => {
+          const row = document.createElement('div'); row.className = 'opt-row';
+          const l = document.createElement('div'); l.className = 'letter num'; l.textContent = i + 1; l.style.background = col(i);
+          const inp = document.createElement('input');
+          inp.type = 'text'; inp.maxLength = 40; inp.autocomplete = 'off'; inp.placeholder = ph(i); inp.value = v;
+          inp.style.borderColor = `color-mix(in srgb, ${col(i)} 55%, var(--line))`;
+          inp.setAttribute('aria-label', ph(i));
+          inp.addEventListener('input', () => { items[i] = inp.value; persist(); change?.(); });
+          inp.addEventListener('focus', () => inp.select());
+          const rm = document.createElement('button'); rm.className = 'rm'; rm.textContent = '✕';
+          rm.setAttribute('aria-label', ph(i) + ' entfernen');
+          rm.disabled = items.length <= min;
+          rm.addEventListener('click', () => api.remove(i));
+          row.append(l, inp, rm); el.appendChild(row);
+          if (focusIdx === i) setTimeout(() => inp.focus(), 0);
+          return row;
+        });
+        addBtn.disabled = items.length >= max;
+        if (!silent) change?.();
+      },
+      remove(i) { if (items.length <= min) return; items.splice(i, 1); api.render(); persist(); },
+      lock(on) { el.inert = on; addBtn.inert = on; }
+    };
+    addBtn.addEventListener('click', () => {
+      if (items.length >= max) return;
+      items.push(''); api.render(items.length - 1); persist();
+    });
+    api.render(-1, true);
+    return api;
+  }
+
+  function chips(el, values, label, active, onPick) {
+    el.innerHTML = '';
+    values.forEach(v => {
+      const b = document.createElement('button'); b.className = 'chip' + (v === active ? ' active' : '');
+      b.textContent = label(v);
+      b.addEventListener('click', () => {
+        el.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+        b.classList.add('active'); onPick(v);
+      });
+      el.appendChild(b);
+    });
+  }
+
+  /* ---------- 🎲 Würfel ---------- */
+  const SIDES = [4, 6, 8, 10, 12, 20], DICE_HIST = 10;
+  const PIPS = { 1: [4], 2: [0, 8], 3: [0, 4, 8], 4: [0, 2, 6, 8], 5: [0, 2, 4, 6, 8], 6: [0, 2, 3, 5, 6, 8] };
+  const dice = Object.assign({ n: 2, s: 6, hist: [] }, LS.get('mw.dice', {}));
+  const saveDice = () => LS.set('mw.dice', dice);
+  let diceBusy = false;
+
+  function drawDie(el, v, s, i) {
+    el.innerHTML = ''; el.className = 'die';
+    el.style.borderColor = `color-mix(in srgb, ${col(i)} 70%, var(--line))`;
+    if (s === 6 && v) {
+      el.classList.add('pips');
+      for (let p = 0; p < 9; p++) {
+        const dot = document.createElement('i');
+        if (PIPS[v].includes(p)) { dot.className = 'on'; dot.style.background = col(i); }
+        el.appendChild(dot);
+      }
+    } else {
+      el.append(v || '?');
+      const t = document.createElement('small'); t.textContent = 'W' + s; el.appendChild(t);
+    }
+  }
+  function diceStage(values) {
+    const st = $('#diceStage'); st.innerHTML = '';
+    return Array.from({ length: dice.n }, (_, i) => {
+      const d = document.createElement('div'); drawDie(d, values?.[i], dice.s, i); st.appendChild(d); return d;
+    });
+  }
+  function diceSum(values) {
+    const box = $('#diceSum'); box.innerHTML = '';
+    if (!values) return;
+    const b = document.createElement('b'), sp = document.createElement('span');
+    b.textContent = values.reduce((a, v) => a + v, 0);
+    sp.textContent = values.length > 1 ? `Summe · ${values.join(' + ')}` : `W${dice.s}`;
+    box.append(b, sp);
+  }
+  function renderDiceHist() {
+    const list = $('#diceHist'); list.innerHTML = '';
+    $('#diceClear').style.display = dice.hist.length ? '' : 'none';
+    if (!dice.hist.length) {
+      const d = document.createElement('div'); d.className = 'empty'; d.textContent = 'Noch nicht gewürfelt.'; list.appendChild(d); return;
+    }
+    dice.hist.forEach(h => {
+      const r = document.createElement('div'); r.className = 'mini-item';
+      const a = document.createElement('span'); a.textContent = `${h.v.length}× W${h.s} · ${h.v.join(' + ')}`;
+      const b = document.createElement('b'); b.textContent = h.v.reduce((x, y) => x + y, 0);
+      r.append(a, b); list.appendChild(r);
+    });
+  }
+  async function rollDice() {
+    if (diceBusy) return; diceBusy = true;
+    const n = dice.n, s = dice.s;
+    const values = Array.from({ length: n }, () => randomInt(s) + 1);
+    const els = diceStage(); diceSum(null);
+    els.forEach(d => d.classList.add('rolling'));
+    const timer = setInterval(() => els.forEach((d, i) => { drawDie(d, randomInt(s) + 1, s, i); d.classList.add('rolling'); }), 80);
+    await sleep(900 + randomInt(701));
+    clearInterval(timer);
+    els.forEach((d, i) => { drawDie(d, values[i], s, i); d.classList.add('landed'); });
+    diceSum(values);
+    dice.hist.unshift({ s, v: values }); dice.hist = dice.hist.slice(0, DICE_HIST); saveDice();
+    renderDiceHist();
+    if (navigator.vibrate) navigator.vibrate(40);
+    diceBusy = false;
+  }
+  function diceSetup() {
+    if (diceBusy) return;
+    saveDice(); diceStage(); diceSum(null);
+  }
+  chips($('#diceCount'), [1, 2, 3, 4, 5, 6], v => v, dice.n, v => { dice.n = v; diceSetup(); });
+  chips($('#diceSides'), SIDES, v => 'W' + v, dice.s, v => { dice.s = v; diceSetup(); });
+  $('#diceGo').addEventListener('click', rollDice);
+  $('#diceStage').addEventListener('click', rollDice);
+  $('#diceClear').addEventListener('click', () => { dice.hist = []; saveDice(); renderDiceHist(); });
+  diceStage(); renderDiceHist();
+
+  /* ---------- 🎡 Glücksrad ---------- */
+  const SVG = 'http://www.w3.org/2000/svg', wheel = $('#wheel');
+  const wheelList = makeList($('#wheelList'), $('#wheelAdd'), 'mw.wheel', ['Pizza', 'Sushi', 'Döner', 'Pasta'],
+    { min: 2, max: 12, ph: i => 'Feld ' + (i + 1), change: () => drawWheel() });
+  let wheelRot = 0, wheelBusy = false;
+
+  // Nachbarfelder nie gleichfarbig (auch nicht letztes neben erstem)
+  const segColor = (i, n) => (i === n - 1 && n > 1 && i % 6 === 0) ? 1 : i % 6;
+  const polar = (deg, r) => { const a = deg * Math.PI / 180; return [Math.sin(a) * r, -Math.cos(a) * r]; };
+
+  function drawWheel() {
+    const nm = wheelList.names(), n = nm.length, seg = 360 / n, R = 96;
+    wheel.innerHTML = '';
+    nm.forEach((name, i) => {
+      const [x0, y0] = polar(i * seg, R), [x1, y1] = polar((i + 1) * seg, R);
+      const p = document.createElementNS(SVG, 'path');
+      p.setAttribute('d', `M0,0 L${x0},${y0} A${R},${R} 0 ${seg > 180 ? 1 : 0} 1 ${x1},${y1} Z`);
+      p.style.fill = col(segColor(i, n)); p.style.stroke = 'var(--card)'; p.style.strokeWidth = '1.5';
+      const t = document.createElementNS(SVG, 'text');
+      t.setAttribute('transform', `rotate(${(i + 0.5) * seg - 90})`);
+      t.setAttribute('x', 86); t.setAttribute('text-anchor', 'end');
+      t.style.fontSize = (n <= 4 ? 13 : n <= 8 ? 11 : 9) + 'px';
+      t.textContent = name.length > 13 ? name.slice(0, 12) + '…' : name;
+      wheel.append(p, t);
+    });
+    const ring = document.createElementNS(SVG, 'circle');
+    ring.setAttribute('r', 97); ring.style.fill = 'none'; ring.style.stroke = 'var(--card)'; ring.style.strokeWidth = '3';
+    wheel.appendChild(ring);
+  }
+
+  async function spinWheel() {
+    if (wheelBusy) return; wheelBusy = true;
+    const nm = wheelList.names(), n = nm.length, seg = 360 / n;
+    const win = randomInt(n);
+    const target = (win + (100 + randomInt(801)) / 1000) * seg; // irgendwo im Gewinnerfeld, nicht auf der Kante
+    const dur = 4000 + randomInt(1501);
+    wheelRot += 360 * (5 + randomInt(3)) + ((((-target - wheelRot) % 360) + 360) % 360);
+    wheelList.lock(true);
+    wheel.style.transition = `transform ${dur}ms cubic-bezier(.12,.7,.15,1)`;
+    wheel.style.transform = `rotate(${wheelRot}deg)`;
+    await sleep(dur + 250);
+    wheelList.lock(false); wheelBusy = false;
+    if (view !== 'rad') return;
+    showToolResult({
+      emoji: '🎡', label: 'Das Rad sagt', win: nm[win], color: segColor(win, n),
+      sub: `Feld ${win + 1} von ${n}`, again: spinWheel,
+      extra: n > 2 ? { text: `„${nm[win]}“ aus dem Rad entfernen`, fn: () => wheelList.remove(win) } : null
+    });
+  }
+  $('#wheelGo').addEventListener('click', spinWheel);
+  $('#wheelHub').addEventListener('click', spinWheel);
+
+  /* ---------- 💸 Wer zahlt? ---------- */
+  const payList = makeList($('#payList'), $('#payAdd'), 'mw.pay', ['', '', ''],
+    { min: 2, max: 12, ph: i => 'Person ' + (i + 1) });
+  let payBusy = false;
+  const payHot = idx => payList.rows.forEach((r, i) => r.classList.toggle('hot', i === idx));
+
+  async function whoPays() {
+    if (payBusy) return; payBusy = true;
+    const nm = payList.names(), n = nm.length, loser = randomInt(n);
+    // Markierung springt zufällig durch die Liste, wird langsamer und bleibt beim Verlierer stehen
+    const steps = 18 + randomInt(9), seq = [];
+    let prev = -1;
+    for (let k = 0; k < steps - 1; k++) {
+      let j; do { j = randomInt(n); } while (j === prev || (k === steps - 2 && j === loser));
+      seq.push(prev = j);
+    }
+    seq.push(loser);
+    payList.lock(true);
+    for (let k = 0; k < seq.length; k++) {
+      payHot(seq[k]);
+      if (navigator.vibrate) navigator.vibrate(8);
+      await sleep(55 + Math.pow(k / seq.length, 2.2) * 420);
+    }
+    await sleep(500);
+    payList.lock(false); payBusy = false;
+    if (view !== 'zahlt') return;
+    showToolResult({
+      emoji: '💸', label: 'Heute zahlt', win: nm[loser], color: loser,
+      sub: `Ausgelost unter ${n} Personen`, again: whoPays
+    });
+  }
+  $('#payGo').addEventListener('click', whoPays);
+  toolDlg.addEventListener('close', () => { if (!payBusy) payHot(-1); });
+
+  /* ---------- 👥 Team-Auslosung ---------- */
+  const teams = Object.assign({ names: '', k: 2, last: null }, LS.get('mw.teams', {}));
+  const saveTeams = () => LS.set('mw.teams', teams);
+  const teamNames = $('#teamNames');
+  let teamBusy = false;
+  const parseNames = () => teamNames.value.split(/[\n,;]+/).map(s => s.trim().slice(0, 40)).filter(Boolean).slice(0, 200);
+
+  function shuffle(a) {
+    a = a.slice();
+    for (let i = a.length - 1; i > 0; i--) { const j = randomInt(i + 1); [a[i], a[j]] = [a[j], a[i]]; }
+    return a;
+  }
+  const split = (names, k) => { const t = Array.from({ length: k }, () => []); names.forEach((x, i) => t[i % k].push(x)); return t; };
+
+  function teamHint() {
+    const n = parseNames().length, k = teams.k;
+    $('#teamCnt').textContent = n ? `(${n})` : '';
+    const base = Math.floor(n / k), extra = n % k, p = c => c === 1 ? 'Person' : 'Personen';
+    $('#teamHint').textContent =
+      n < k ? `Für ${k} Teams werden mindestens ${k} Namen gebraucht.`
+      : extra ? `${k} Teams mit ${base}–${base + 1} Personen` : `${k} Teams mit je ${base} ${p(base)}`;
+  }
+  function renderTeams(list) {
+    const out = $('#teamOut'); out.innerHTML = '';
+    $('#teamActions').hidden = !list;
+    if (!list) return;
+    list.forEach((members, i) => {
+      const c = document.createElement('div'); c.className = 'team';
+      const h = document.createElement('h3'); h.textContent = `Team ${i + 1} · ${members.length}`; h.style.background = col(i);
+      const ol = document.createElement('ol');
+      members.forEach(m => { const li = document.createElement('li'); li.textContent = m; ol.appendChild(li); });
+      c.append(h, ol); out.appendChild(c);
+    });
+  }
+  async function drawTeams() {
+    if (teamBusy) return;
+    const names = parseNames(), k = teams.k;
+    if (names.length < k) { teamHint(); teamNames.focus(); return; }
+    teamBusy = true; teamNames.inert = true;
+    for (let f = 0; f < 10; f++) { renderTeams(split(shuffle(names), k)); await sleep(90); }
+    teams.last = split(shuffle(names), k); saveTeams();
+    renderTeams(teams.last);
+    $('#teamOut').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    if (navigator.vibrate) navigator.vibrate([40, 60, 90]);
+    teamNames.inert = false; teamBusy = false;
+  }
+  teamNames.value = teams.names;
+  teamNames.addEventListener('input', () => { teams.names = teamNames.value; saveTeams(); teamHint(); });
+  chips($('#teamCount'), [2, 3, 4, 5, 6], v => v, teams.k, v => { teams.k = v; saveTeams(); teamHint(); });
+  $('#teamGo').addEventListener('click', drawTeams);
+  $('#teamCopy').addEventListener('click', async () => {
+    if (!teams.last) return;
+    const txt = teams.last.map((m, i) => `Team ${i + 1}: ${m.join(', ')}`).join('\n');
+    const b = $('#teamCopy');
+    try { await navigator.clipboard.writeText(txt); b.textContent = '✓ Kopiert'; }
+    catch (e) { b.textContent = 'Kopieren nicht möglich'; }
+    setTimeout(() => { b.textContent = '📋 Kopieren'; }, 1600);
+  });
+  teamHint(); renderTeams(teams.last);
+
+  route();
 
   /* ---------- Offline / installierbar ---------- */
   if ('serviceWorker' in navigator) {
