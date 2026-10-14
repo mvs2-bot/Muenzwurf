@@ -9,7 +9,8 @@ Die Seite wirft eine Münze beliebig oft und zeigt das Ergebnis einzeln und gesa
 - **Echter Zufall:** jeder Wurf über `crypto.getRandomValues` (kryptografischer Zufall, exakt 50/50)
 - **Spannung:** zufällige Wartezeit von 3–5 Sekunden mit Münz-Animation und Live-Spielstand
 - **Ergebnis-Pop-over:** Gewinner, Balken mit Prozenten und alle Einzelwürfe
-- **Anpassbar:** eigene Namen für beide Seiten, 1–999 Würfe (Schnellwahl 1/3/11/21/51), Seiten tauschen
+- **Anpassbar:** eigene Namen, 1–999 Würfe (Schnellwahl 1/3/11/21/51), Seiten tauschen
+- **Mehr als zwei Optionen:** bis zu 6 Optionen (A–F); jeder Wurf wählt zufällig eine davon
 - **Verlauf:** die letzten 50 Ergebnisse im Local Storage, antippen zeigt die Details
 - **Hell/Dunkel-Modus** per Sonne/Mond-Button
 - **PWA:** installierbar auf dem Handy und offline nutzbar
@@ -20,13 +21,15 @@ Die Seite wirft eine Münze beliebig oft und zeigt das Ergebnis einzeln und gesa
 
 ```
 ?a=Gym&b=Bouldern&n=21
+?o=Gym,Bouldern,Laufen&n=21
 ```
 
-| Parameter | Bedeutung        |
-|-----------|------------------|
-| `a`       | Name Seite A     |
-| `b`       | Name Seite B     |
-| `n`       | Anzahl Würfe     |
+| Parameter | Bedeutung                                 |
+|-----------|-------------------------------------------|
+| `a`       | Name Seite A                              |
+| `b`       | Name Seite B                              |
+| `o`       | 2–6 Optionen, durch Komma getrennt        |
+| `n`       | Anzahl Würfe                              |
 
 ## Dateien
 

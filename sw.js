@@ -1,6 +1,6 @@
 // Münzwurf – Service Worker (offline-fähig)
 // Bei Änderungen an der Seite die Versionsnummer erhöhen.
-const CACHE = 'muenzwurf-v1';
+const CACHE = 'muenzwurf-v2';
 const ASSETS = ['./', './index.html', './manifest.json', './icon.svg'];
 
 self.addEventListener('install', e => {
