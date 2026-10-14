@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Münzwurf</title>
+<meta name="description" content="Entscheidungshilfe: Münze mehrfach werfen, Option A oder B">
+<meta name="theme-color" content="#0f172a">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon.svg">
+<script>
+  // Theme früh setzen (kein Aufblitzen)
+  try { const t = localStorage.getItem('mw.theme'); if (t) document.documentElement.dataset.theme = JSON.parse(t); } catch (e) {}
+</script>
+<style>
+  :root {
+    --bg: #f4f1ea; --bg2: #ffffff; --card: #ffffff; --text: #1c1917; --muted: #78716c;
+    --line: #e7e2d8; --a: #0d9488; --a-soft: #ccfbf1; --b: #ea580c; --b-soft: #ffedd5;
+    --gold1: #fde68a; --gold2: #f59e0b; --gold3: #b45309; --shadow: 0 10px 30px rgba(28,25,23,.10);
+    --radius: 18px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0f172a; --bg2: #111c33; --card: #16213b; --text: #f1f5f9; --muted: #94a3b8;
+      --line: #263452; --a: #2dd4bf; --a-soft: #134e4a; --b: #fb923c; --b-soft: #7c2d12;
+      --shadow: 0 10px 30px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0f172a; --bg2: #111c33; --card: #16213b; --text: #f1f5f9; --muted: #94a3b8;
+    --line: #263452; --a: #2dd4bf; --a-soft: #134e4a; --b: #fb923c; --b-soft: #7c2d12;
+    --shadow: 0 10px 30px rgba(0,0,0,.35);
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    -webkit-tap-highlight-color: transparent; min-height: 100dvh;
+  }
+  button, input { font: inherit; color: inherit; }
+
+  /* Sticky Header */
+  header {
+    position: sticky; top: 0; z-index: 10;
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    padding: calc(10px + env(safe-area-inset-top)) 16px 10px;
+    background: color-mix(in srgb, var(--bg) 85%, transparent);
+    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--line);
+  }
+  .brand { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 1.15rem; letter-spacing: .2px; }
+  .brand img { width: 30px; height: 30px; }
+  .icon-btn {
+    border: 1.5px solid var(--line); background: var(--card); border-radius: 12px;
+    padding: 7px 10px; font-size: 1.2rem; line-height: 1; cursor: pointer;
+  }
+
+  main { max-width: 560px; margin: 0 auto; padding: 18px 16px 40px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); padding: 18px; }
+  .card + .card, .card + section { margin-top: 18px; }
+  label.lbl { display: block; font-size: .8rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .6px; margin-bottom: 6px; }
+
+  .options { display: grid; grid-template-columns: 1fr auto 1fr; gap: 10px; align-items: end; }
+  .opt input {
+    width: 100%; padding: 12px 12px; border-radius: 12px; border: 2px solid var(--line);
+    background: var(--bg2); font-weight: 700; font-size: 1.02rem; outline: none; min-width: 0;
+  }
+  .opt.a input { border-color: color-mix(in srgb, var(--a) 55%, var(--line)); }
+  .opt.b input { border-color: color-mix(in srgb, var(--b) 55%, var(--line)); }
+  .opt.a input:focus { border-color: var(--a); }
+  .opt.b input:focus { border-color: var(--b); }
+  .dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 6px; vertical-align: 1px; }
+  .dot.a { background: var(--a); } .dot.b { background: var(--b); }
+  .swap { margin-bottom: 4px; }
+
+  .count { margin-top: 18px; }
+  .count-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .chip {
+    border: 1.5px solid var(--line); background: var(--bg2); border-radius: 999px;
+    padding: 7px 14px; font-weight: 700; cursor: pointer;
+  }
+  .chip.active { background: var(--text); color: var(--bg); border-color: var(--text); }
+  .count-row input {
+    width: 84px; padding: 7px 10px; border-radius: 999px; border: 1.5px solid var(--line);
+    background: var(--bg2); font-weight: 700; text-align: center;
+  }
+  .hint { font-size: .82rem; color: var(--muted); margin-top: 8px; min-height: 1.2em; }
+
+  .go {
+    margin-top: 20px; width: 100%; border: 0; border-radius: 16px; padding: 18px;
+    font-size: 1.25rem; font-weight: 800; cursor: pointer; color: #451a03;
+    background: linear-gradient(135deg, var(--gold1), var(--gold2));
+    box-shadow: 0 8px 22px rgba(245,158,11,.35), inset 0 -3px 0 rgba(0,0,0,.12);
+    transition: transform .12s;
+  }
+  .go:active { transform: scale(.98); }
+
+  /* Verlauf */
+  section.history { margin-top: 22px; }
+  .hist-head { display: flex; justify-content: space-between; align-items: center; margin: 0 4px 10px; }
+  .hist-head h2 { font-size: 1.05rem; margin: 0; }
+  .link-btn { background: none; border: 0; color: var(--muted); cursor: pointer; font-size: .85rem; text-decoration: underline; }
+  .hist-list { display: grid; gap: 8px; }
+  .hist-item {
+    display: grid; grid-template-columns: 1fr auto; gap: 4px 10px; align-items: center;
+    background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 11px 14px;
+    cursor: pointer; text-align: left; width: 100%;
+  }
+  .hist-win { font-weight: 800; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .hist-score { font-weight: 800; font-variant-numeric: tabular-nums; }
+  .hist-meta { grid-column: 1 / -1; font-size: .8rem; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .minibar { grid-column: 1 / -1; height: 5px; border-radius: 4px; overflow: hidden; display: flex; background: var(--line); }
+  .minibar span:first-child { background: var(--a); } .minibar span:last-child { background: var(--b); }
+  .empty { color: var(--muted); text-align: center; padding: 18px; border: 1.5px dashed var(--line); border-radius: 14px; }
+  footer { text-align: center; color: var(--muted); font-size: .75rem; padding: 0 16px 30px; }
+
+  /* Pop-Over (Dialog) */
+  dialog {
+    border: 0; padding: 0; background: transparent; color: var(--text);
+    max-width: min(440px, calc(100vw - 28px)); width: 100%; max-height: calc(100dvh - 40px); overflow: visible;
+  }
+  dialog::backdrop { background: rgba(2,6,23,.6); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
+  dialog[open] .pop { animation: popIn .35s cubic-bezier(.2,1.4,.4,1); }
+  @keyframes popIn { from { transform: scale(.85); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+  .pop {
+    background: var(--card); border: 1px solid var(--line); border-radius: 24px; box-shadow: var(--shadow);
+    padding: 24px 20px 20px; text-align: center; position: relative; overflow: hidden;
+    max-height: calc(100dvh - 40px); display: flex; flex-direction: column;
+  }
+
+  /* Münze */
+  .stage { height: 230px; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; perspective: 900px; position: relative; }
+  .coin {
+    width: 150px; height: 150px; position: relative; transform-style: preserve-3d;
+    transition: transform .6s cubic-bezier(.2,1.2,.4,1);
+  }
+  .coin.spinning { animation: toss .9s cubic-bezier(.45,.05,.55,.95) infinite; transition: none; }
+  @keyframes toss {
+    0%   { transform: translateY(0)      rotateX(0deg); }
+    50%  { transform: translateY(-70px)  rotateX(900deg); }
+    100% { transform: translateY(0)      rotateX(1800deg); }
+  }
+  .face {
+    position: absolute; inset: 0; border-radius: 50%; backface-visibility: hidden; -webkit-backface-visibility: hidden;
+    display: flex; align-items: center; justify-content: center; padding: 22px; text-align: center;
+    font-weight: 900; font-size: 1.05rem; line-height: 1.15; color: #451a03; word-break: break-word;
+    background: radial-gradient(circle at 35% 30%, #fff7d6 0%, var(--gold1) 25%, var(--gold2) 70%, var(--gold3) 100%);
+    box-shadow: inset 0 0 0 7px rgba(180,83,9,.55), inset 0 0 0 11px rgba(255,247,214,.6), 0 0 0 2px rgba(120,53,15,.35);
+  }
+  .face .tag {
+    position: absolute; top: 16px; left: 50%; transform: translateX(-50%);
+    font-size: .7rem; font-weight: 900; letter-spacing: 1px; padding: 2px 8px; border-radius: 99px; color: #fff;
+  }
+  .face.a .tag { background: var(--a); } .face.b .tag { background: var(--b); }
+  .face.b { transform: rotateX(180deg); }
+  .shadow { width: 120px; height: 16px; margin-top: 18px; border-radius: 50%; background: rgba(0,0,0,.28); filter: blur(4px); }
+  .spinning + .shadow { animation: shadow .9s cubic-bezier(.45,.05,.55,.95) infinite; }
+  @keyframes shadow { 50% { transform: scale(.55); opacity: .45; } }
+
+  .throw-title { font-weight: 800; font-size: 1.15rem; margin: 14px 0 4px; }
+  .live { display: flex; justify-content: center; align-items: center; gap: 14px; font-size: 2rem; font-weight: 900; font-variant-numeric: tabular-nums; margin: 6px 0 4px; }
+  .live .la { color: var(--a); } .live .lb { color: var(--b); } .live .sep { color: var(--muted); font-size: 1.4rem; }
+  .live-names { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: .82rem; color: var(--muted); }
+  .live-names span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .progress { height: 8px; border-radius: 6px; background: var(--line); overflow: hidden; margin-top: 14px; }
+  .progress div { height: 100%; width: 0; background: linear-gradient(90deg, var(--gold1), var(--gold2)); }
+  .progress-txt { font-size: .8rem; color: var(--muted); margin-top: 6px; font-variant-numeric: tabular-nums; }
+
+  /* Ergebnis */
+  .res-label { font-size: .8rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); }
+  .res-win { font-size: 2rem; font-weight: 900; margin: 6px 0 2px; line-height: 1.15; word-break: break-word; }
+  .res-sub { color: var(--muted); font-size: .92rem; }
+  .bars { margin: 18px 0 6px; display: grid; gap: 10px; text-align: left; }
+  .bar-row { display: grid; grid-template-columns: 1fr auto; gap: 4px 10px; font-weight: 700; font-size: .92rem; }
+  .bar-row .name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .bar-row .num { font-variant-numeric: tabular-nums; }
+  .bar { grid-column: 1 / -1; height: 12px; border-radius: 8px; background: var(--line); overflow: hidden; }
+  .bar div { height: 100%; width: 0; border-radius: 8px; transition: width .9s cubic-bezier(.2,1,.3,1); }
+  .bar.a div { background: var(--a); } .bar.b div { background: var(--b); }
+  .throws-head { text-align: left; font-size: .8rem; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: .6px; margin: 14px 0 8px; }
+  .throws { display: flex; flex-wrap: wrap; gap: 6px; overflow-y: auto; min-height: 40px; padding: 2px; }
+  .t {
+    width: 38px; height: 38px; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    font-weight: 900; font-size: .85rem; line-height: 1; color: #fff; opacity: 0; animation: tIn .3s forwards;
+  }
+  .t small { font-size: .55rem; font-weight: 700; opacity: .85; margin-bottom: 1px; }
+  .t.a { background: var(--a); } .t.b { background: var(--b); }
+  @keyframes tIn { from { opacity: 0; transform: scale(.4); } to { opacity: 1; transform: scale(1); } }
+  .actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 16px; flex-shrink: 0; }
+  .btn { border-radius: 14px; padding: 13px; font-weight: 800; cursor: pointer; border: 1.5px solid var(--line); background: var(--bg2); }
+  .btn.primary { border: 0; color: #451a03; background: linear-gradient(135deg, var(--gold1), var(--gold2)); }
+
+  .confetti { position: absolute; left: 50%; top: 70px; pointer-events: none; }
+  .confetti i {
+    position: absolute; width: 8px; height: 12px; border-radius: 2px; opacity: 0;
+    animation: burst 1.3s cubic-bezier(.15,.8,.3,1) forwards;
+  }
+  @keyframes burst {
+    0% { opacity: 1; transform: translate(0,0) rotate(0); }
+    100% { opacity: 0; transform: translate(var(--x), var(--y)) rotate(var(--r)); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .coin.spinning { animation-duration: 2.4s; }
+    .confetti { display: none; }
+  }
+  @media (max-width: 380px) {
+    .options { grid-template-columns: 1fr; }
+    .swap { justify-self: center; transform: rotate(90deg); }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand"><img src="icon.svg" alt=""> Münzwurf</div>
+  <button class="icon-btn" id="themeBtn" aria-label="Hell/Dunkel umschalten">🌙</button>
+</header>
+
+<main>
+  <div class="card">
+    <div class="options">
+      <div class="opt a">
+        <label class="lbl" for="optA"><span class="dot a"></span>Seite A</label>
+        <input id="optA" type="text" maxlength="40" autocomplete="off" placeholder="Option A">
+      </div>
+      <button class="icon-btn swap" id="swapBtn" aria-label="Seiten tauschen" title="Seiten tauschen">⇄</button>
+      <div class="opt b">
+        <label class="lbl" for="optB"><span class="dot b"></span>Seite B</label>
+        <input id="optB" type="text" maxlength="40" autocomplete="off" placeholder="Option B">
+      </div>
+    </div>
+
+    <div class="count">
+      <label class="lbl" for="countInput">Anzahl Würfe</label>
+      <div class="count-row" id="countRow">
+        <button class="chip" data-n="1">1</button>
+        <button class="chip" data-n="3">3</button>
+        <button class="chip" data-n="11">11</button>
+        <button class="chip" data-n="21">21</button>
+        <button class="chip" data-n="51">51</button>
+        <input id="countInput" type="number" min="1" max="999" inputmode="numeric" aria-label="Eigene Anzahl">
+      </div>
+      <div class="hint" id="countHint"></div>
+    </div>
+
+    <button class="go" id="goBtn">🪙 Münze werfen</button>
+  </div>
+
+  <section class="history">
+    <div class="hist-head">
+      <h2>Letzte Ergebnisse</h2>
+      <button class="link-btn" id="clearBtn">Verlauf löschen</button>
+    </div>
+    <div class="hist-list" id="histList"></div>
+  </section>
+</main>
+
+<footer>Zufall per <code>crypto.getRandomValues</code> · gespeichert nur auf diesem Gerät</footer>
+
+<!-- Pop-Over: Wurf läuft -->
+<dialog id="throwDlg">
+  <div class="pop">
+    <div class="stage">
+      <div class="coin" id="coin">
+        <div class="face a"><span class="tag">A</span><span id="faceA"></span></div>
+        <div class="face b"><span class="tag">B</span><span id="faceB"></span></div>
+      </div>
+      <div class="shadow"></div>
+    </div>
+    <div class="throw-title" id="throwTitle">Die Münze fliegt …</div>
+    <div class="live"><span class="la" id="liveA">0</span><span class="sep">:</span><span class="lb" id="liveB">0</span></div>
+    <div class="live-names"><span id="liveNameA"></span><span id="liveNameB"></span></div>
+    <div class="progress"><div id="progBar"></div></div>
+    <div class="progress-txt" id="progTxt"></div>
+  </div>
+</dialog>
+
+<!-- Pop-Over: Ergebnis -->
+<dialog id="resDlg">
+  <div class="pop">
+    <div class="confetti" id="confetti"></div>
+    <div class="res-label" id="resLabel">Ergebnis</div>
+    <div class="res-win" id="resWin"></div>
+    <div class="res-sub" id="resSub"></div>
+    <div class="bars">
+      <div class="bar-row"><span class="name" id="barNameA"></span><span class="num" id="barNumA"></span><div class="bar a"><div id="barA"></div></div></div>
+      <div class="bar-row"><span class="name" id="barNameB"></span><span class="num" id="barNumB"></span><div class="bar b"><div id="barB"></div></div></div>
+    </div>
+    <div class="throws-head">Einzelne Würfe</div>
+    <div class="throws" id="throws"></div>
+    <div class="actions">
+      <button class="btn" id="closeBtn">Schließen</button>
+      <button class="btn primary" id="againBtn">Nochmal werfen</button>
+    </div>
+  </div>
+</dialog>
+
+<script>
+(() => {
+  const $ = s => document.querySelector(s);
+  const LS = {
+    get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
+    set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+  };
+  const HIST_MAX = 50, N_MAX = 999;
+
+  /* ---------- Echter Zufall (kryptografisch) ---------- */
+  function randomBits(n) {
+    const bytes = new Uint8Array(n);
+    crypto.getRandomValues(bytes);
+    return Array.from(bytes, x => (x & 1) ? 'B' : 'A'); // Bit 0 eines Zufallsbytes: exakt 50/50
+  }
+  function randomInt(maxExclusive) { // ohne Modulo-Verzerrung
+    const buf = new Uint32Array(1), limit = Math.floor(0x100000000 / maxExclusive) * maxExclusive;
+    do { crypto.getRandomValues(buf); } while (buf[0] >= limit);
+    return buf[0] % maxExclusive;
+  }
+  const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+  /* ---------- Einstellungen (vorausgefüllt) ---------- */
+  const s = Object.assign({ a: 'Option A', b: 'Option B', n: 21 }, LS.get('mw.settings', {}));
+  const qp = new URLSearchParams(location.search); // optional: ?a=Gym&b=Bouldern&n=21
+  if (qp.get('a')) s.a = qp.get('a').slice(0, 40);
+  if (qp.get('b')) s.b = qp.get('b').slice(0, 40);
+  if (qp.get('n')) s.n = parseInt(qp.get('n'), 10) || s.n;
+
+  const optA = $('#optA'), optB = $('#optB'), countInput = $('#countInput');
+  optA.value = s.a; optB.value = s.b; setCount(s.n);
+
+  function clampN(v) { v = parseInt(v, 10); return isNaN(v) ? 21 : Math.min(N_MAX, Math.max(1, v)); }
+  function setCount(n) {
+    n = clampN(n); countInput.value = n;
+    document.querySelectorAll('#countRow .chip').forEach(c => c.classList.toggle('active', +c.dataset.n === n));
+    $('#countHint').textContent = n % 2 === 0 ? 'Gerade Anzahl – ein Unentschieden ist möglich.' : '';
+    save();
+  }
+  function names() { return { a: optA.value.trim() || 'Option A', b: optB.value.trim() || 'Option B' }; }
+  function save() { const nm = names(); LS.set('mw.settings', { a: nm.a, b: nm.b, n: clampN(countInput.value) }); }
+
+  document.querySelectorAll('#countRow .chip').forEach(c => c.addEventListener('click', () => setCount(c.dataset.n)));
+  countInput.addEventListener('change', () => setCount(countInput.value));
+  countInput.addEventListener('input', () => {
+    const n = parseInt(countInput.value, 10);
+    document.querySelectorAll('#countRow .chip').forEach(c => c.classList.toggle('active', +c.dataset.n === n));
+  });
+  [optA, optB].forEach(i => i.addEventListener('input', save));
+  [optA, optB].forEach(i => i.addEventListener('focus', () => i.select()));
+  $('#swapBtn').addEventListener('click', () => { [optA.value, optB.value] = [optB.value, optA.value]; save(); });
+
+  /* ---------- Hell / Dunkel ---------- */
+  const mq = matchMedia('(prefers-color-scheme: dark)');
+  const isDark = () => (document.documentElement.dataset.theme || (mq.matches ? 'dark' : 'light')) === 'dark';
+  function themeIcon() {
+    $('#themeBtn').textContent = isDark() ? '☀️' : '🌙';
+    document.querySelector('meta[name=theme-color]').content = isDark() ? '#0f172a' : '#f4f1ea';
+  }
+  $('#themeBtn').addEventListener('click', () => {
+    const t = isDark() ? 'light' : 'dark';
+    document.documentElement.dataset.theme = t; LS.set('mw.theme', t); themeIcon();
+  });
+  mq.addEventListener?.('change', themeIcon);
+  themeIcon();
+
+  /* ---------- Wurf ---------- */
+  const throwDlg = $('#throwDlg'), resDlg = $('#resDlg'), coin = $('#coin');
+  throwDlg.addEventListener('cancel', e => e.preventDefault()); // während des Wurfs nicht abbrechbar
+  let busy = false;
+
+  async function doThrow() {
+    if (busy) return; busy = true;
+    if (resDlg.open) resDlg.close();
+    const nm = names(), n = clampN(countInput.value);
+    setCount(n);
+
+    const throws = randomBits(n);
+    const delay = 3000 + randomInt(2001); // zufällig 3,000–5,000 s
+    const countA = throws.filter(t => t === 'A').length, countB = n - countA;
+    const winner = countA > countB ? 'A' : countB > countA ? 'B' : null;
+
+    // Pop-Over vorbereiten
+    $('#faceA').textContent = nm.a; $('#faceB').textContent = nm.b;
+    $('#liveNameA').textContent = nm.a; $('#liveNameB').textContent = nm.b;
+    $('#liveA').textContent = '0'; $('#liveB').textContent = '0';
+    $('#progBar').style.width = '0%'; $('#progTxt').textContent = `Wurf 0 von ${n}`;
+    $('#throwTitle').textContent = 'Die Münze fliegt …';
+    coin.style.transform = ''; coin.classList.add('spinning');
+    throwDlg.showModal();
+
+    // Würfe live mitzählen
+    const start = performance.now();
+    let shown = 0, la = 0, lb = 0, raf;
+    const tick = now => {
+      const target = Math.min(n, Math.floor(((now - start) / delay) * n));
+      while (shown < target) { throws[shown++] === 'A' ? la++ : lb++; }
+      $('#liveA').textContent = la; $('#liveB').textContent = lb;
+      $('#progBar').style.width = (shown / n * 100) + '%';
+      $('#progTxt').textContent = `Wurf ${shown} von ${n}`;
+      if (shown < n) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+
+    await sleep(delay);
+    cancelAnimationFrame(raf); tick(start + delay);
+
+    // Landen – auf der Gewinnerseite
+    $('#throwTitle').textContent = winner ? 'Gelandet!' : 'Gleichstand!';
+    coin.classList.remove('spinning');
+    coin.style.transform = `rotateX(${winner === 'B' ? 1980 : 1800}deg)`;
+    await sleep(800);
+    throwDlg.close();
+
+    const entry = { ts: Date.now(), a: nm.a, b: nm.b, n, ca: countA, cb: countB, t: throws.join('') };
+    const hist = LS.get('mw.history', []); hist.unshift(entry); LS.set('mw.history', hist.slice(0, HIST_MAX));
+    renderHistory();
+    showResult(entry, true);
+    if (navigator.vibrate) navigator.vibrate(winner ? [40, 60, 90] : [60, 60, 60]);
+    busy = false;
+  }
+
+  /* ---------- Ergebnis-Pop-Over ---------- */
+  function showResult(e, celebrate) {
+    const winner = e.ca > e.cb ? 'A' : e.cb > e.ca ? 'B' : null;
+    const pct = v => Math.round(v / e.n * 100);
+    $('#resLabel').textContent = winner ? 'Die Münze sagt' : 'Unentschieden';
+    const win = $('#resWin');
+    win.textContent = winner ? (winner === 'A' ? e.a : e.b) : `${e.a} = ${e.b}`;
+    win.style.color = winner === 'A' ? 'var(--a)' : winner === 'B' ? 'var(--b)' : 'var(--text)';
+    $('#resSub').textContent = winner
+      ? `${Math.max(e.ca, e.cb)} : ${Math.min(e.ca, e.cb)} bei ${e.n} ${e.n === 1 ? 'Wurf' : 'Würfen'}`
+      : `${e.ca} : ${e.cb} – einfach nochmal werfen`;
+    $('#barNameA').textContent = e.a; $('#barNameB').textContent = e.b;
+    $('#barNumA').textContent = `${e.ca} (${pct(e.ca)} %)`; $('#barNumB').textContent = `${e.cb} (${pct(e.cb)} %)`;
+    $('#barA').style.width = '0'; $('#barB').style.width = '0';
+
+    const box = $('#throws'); box.innerHTML = '';
+    const frag = document.createDocumentFragment();
+    [...e.t].forEach((t, i) => {
+      const d = document.createElement('div');
+      d.className = 't ' + t.toLowerCase();
+      d.style.animationDelay = Math.min(i * 0.025, 1.2) + 's';
+      d.title = `Wurf ${i + 1}: ${t === 'A' ? e.a : e.b}`;
+      d.innerHTML = `<small>${i + 1}</small>${t}`;
+      frag.appendChild(d);
+    });
+    box.appendChild(frag);
+
+    resDlg.showModal();
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      $('#barA').style.width = pct(e.ca) + '%'; $('#barB').style.width = pct(e.cb) + '%';
+    }));
+    if (celebrate && winner) confetti(winner);
+  }
+
+  function confetti(winner) {
+    const c = $('#confetti'); c.innerHTML = '';
+    const cs = getComputedStyle(document.documentElement);
+    const colors = [cs.getPropertyValue(winner === 'A' ? '--a' : '--b'), '#fde68a', '#f59e0b', '#ffffff'];
+    for (let i = 0; i < 28; i++) {
+      const p = document.createElement('i');
+      const ang = (i / 28) * Math.PI * 2, dist = 90 + randomInt(90);
+      p.style.setProperty('--x', Math.cos(ang) * dist + 'px');
+      p.style.setProperty('--y', Math.sin(ang) * dist * 0.8 + 'px');
+      p.style.setProperty('--r', (randomInt(720) - 360) + 'deg');
+      p.style.background = colors[i % colors.length];
+      c.appendChild(p);
+    }
+  }
+
+  $('#goBtn').addEventListener('click', doThrow);
+  $('#againBtn').addEventListener('click', doThrow);
+  $('#closeBtn').addEventListener('click', () => resDlg.close());
+  resDlg.addEventListener('click', e => { if (e.target === resDlg) resDlg.close(); });
+
+  /* ---------- Verlauf ---------- */
+  function renderHistory() {
+    const list = $('#histList'), hist = LS.get('mw.history', []);
+    list.innerHTML = '';
+    $('#clearBtn').style.display = hist.length ? '' : 'none';
+    if (!hist.length) {
+      const d = document.createElement('div'); d.className = 'empty';
+      d.textContent = 'Noch keine Würfe – los geht’s!'; list.appendChild(d); return;
+    }
+    hist.forEach(e => {
+      const winner = e.ca > e.cb ? 'A' : e.cb > e.ca ? 'B' : null;
+      const b = document.createElement('button'); b.className = 'hist-item';
+      const w = document.createElement('div'); w.className = 'hist-win';
+      w.textContent = winner ? '🏆 ' + (winner === 'A' ? e.a : e.b) : '🤝 Unentschieden';
+      w.style.color = winner === 'A' ? 'var(--a)' : winner === 'B' ? 'var(--b)' : '';
+      const sc = document.createElement('div'); sc.className = 'hist-score'; sc.textContent = `${e.ca} : ${e.cb}`;
+      const bar = document.createElement('div'); bar.className = 'minibar';
+      bar.innerHTML = `<span style="width:${e.ca / e.n * 100}%"></span><span style="width:${e.cb / e.n * 100}%"></span>`;
+      const m = document.createElement('div'); m.className = 'hist-meta';
+      const dt = new Date(e.ts).toLocaleString('de-DE', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' });
+      m.textContent = `${dt} · ${e.a} vs. ${e.b} · ${e.n} ${e.n === 1 ? 'Wurf' : 'Würfe'}`;
+      b.append(w, sc, bar, m);
+      b.addEventListener('click', () => showResult(e, false));
+      list.appendChild(b);
+    });
+  }
+  $('#clearBtn').addEventListener('click', () => {
+    if (confirm('Alle gespeicherten Ergebnisse löschen?')) { LS.set('mw.history', []); renderHistory(); }
+  });
+  renderHistory();
+
+  /* ---------- Offline / installierbar ---------- */
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+  }
+})();
+</script>
+</body>
+</html>
