@@ -5,13 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Münzwurf</title>
 <meta name="description" content="Entscheidungshilfe: Münze mehrfach werfen, zwei oder mehr Optionen">
-<meta name="theme-color" content="#0f172a">
+<meta name="theme-color" content="#f4f1ea">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icon.svg">
 <script>
-  // Theme früh setzen (kein Aufblitzen)
-  try { const t = localStorage.getItem('mw.theme'); if (t) document.documentElement.dataset.theme = JSON.parse(t); } catch (e) {}
+  // Theme früh setzen (kein Aufblitzen). Standard ist hell, dunkel nur nach eigener Wahl.
+  try { if (JSON.parse(localStorage.getItem('mw.theme')) === 'dark') { document.documentElement.dataset.theme = 'dark'; document.querySelector('meta[name=theme-color]').content = '#000000'; } } catch (e) {}
 </script>
 <style>
   :root {
@@ -21,17 +21,12 @@
     --gold1: #fde68a; --gold2: #f59e0b; --gold3: #b45309; --shadow: 0 10px 30px rgba(28,25,23,.10);
     --radius: 18px; --on-c: #ffffff;
   }
-  @media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) {
-      --bg: #0f172a; --bg2: #111c33; --card: #16213b; --text: #f1f5f9; --muted: #94a3b8; --line: #263452;
-      --c0: #2dd4bf; --c1: #fb923c; --c2: #a78bfa; --c3: #f472b6; --c4: #60a5fa; --c5: #a3e635;
-      --shadow: 0 10px 30px rgba(0,0,0,.35); --on-c: #0f172a;
-    }
-  }
+  /* Dunkelmodus, optimiert für AMOLED: reines Schwarz (Pixel aus), kaum Flächen, keine Schatten */
   :root[data-theme="dark"] {
-    --bg: #0f172a; --bg2: #111c33; --card: #16213b; --text: #f1f5f9; --muted: #94a3b8; --line: #263452;
+    --bg: #000000; --bg2: #000000; --card: #0a0a0a; --text: #ededed; --muted: #a3a3a3; --line: #262626;
     --c0: #2dd4bf; --c1: #fb923c; --c2: #a78bfa; --c3: #f472b6; --c4: #60a5fa; --c5: #a3e635;
-    --shadow: 0 10px 30px rgba(0,0,0,.35); --on-c: #0f172a;
+    --shadow: none; --on-c: #000000;
+    color-scheme: dark;
   }
 
   * { box-sizing: border-box; }
@@ -130,6 +125,7 @@
     max-width: min(440px, calc(100vw - 28px)); width: 100%; max-height: calc(100dvh - 40px); overflow: visible;
   }
   dialog::backdrop { background: rgba(2,6,23,.6); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
+  :root[data-theme="dark"] dialog::backdrop { background: rgba(0,0,0,.8); }
   dialog[open] .pop { animation: popIn .35s cubic-bezier(.2,1.4,.4,1); }
   @keyframes popIn { from { transform: scale(.85); opacity: 0; } to { transform: scale(1); opacity: 1; } }
   .pop {
@@ -575,17 +571,16 @@
   setCount(nSaved);
 
   /* ---------- Hell / Dunkel ---------- */
-  const mq = matchMedia('(prefers-color-scheme: dark)');
-  const isDark = () => (document.documentElement.dataset.theme || (mq.matches ? 'dark' : 'light')) === 'dark';
+  const isDark = () => document.documentElement.dataset.theme === 'dark';
   function themeIcon() {
     $('#themeBtn').textContent = isDark() ? '☀️' : '🌙';
-    document.querySelector('meta[name=theme-color]').content = isDark() ? '#0f172a' : '#f4f1ea';
+    document.querySelector('meta[name=theme-color]').content = isDark() ? '#000000' : '#f4f1ea';
   }
   $('#themeBtn').addEventListener('click', () => {
     const t = isDark() ? 'light' : 'dark';
-    document.documentElement.dataset.theme = t; LS.set('mw.theme', t); themeIcon();
+    if (t === 'dark') document.documentElement.dataset.theme = 'dark'; else delete document.documentElement.dataset.theme;
+    LS.set('mw.theme', t); themeIcon();
   });
-  mq.addEventListener?.('change', themeIcon);
   themeIcon();
 
   /* ---------- Wurf ---------- */
