@@ -12,8 +12,10 @@ Die Seite wirft eine Münze beliebig oft und zeigt das Ergebnis einzeln und gesa
 - **Anpassbar:** eigene Namen, 1–999 Würfe (Schnellwahl 1/3/11/21/51), Seiten tauschen
 - **Mehr als zwei Optionen:** bis zu 6 Optionen (A–F); jeder Wurf wählt zufällig eine davon
 - **Verlauf:** die letzten 50 Ergebnisse im Local Storage, antippen zeigt die Details
+- **Teilen:** jedes Ergebnis (Münzwurf, Glücksrad, Wer zahlt?, Teams) per Teilen-Menü direkt in den Chat schicken; am Rechner wird es kopiert
 - **Hell/Dunkel-Modus** per Sonne/Mond-Button
-- **PWA:** installierbar auf dem Handy und offline nutzbar
+- **PWA:** installierbar auf dem Handy (eigene Icons für iPhone und Android) und offline nutzbar
+- **Immer aktuell:** neue Versionen sind beim nächsten Öffnen sofort da; war die App lange im Hintergrund offen, erscheint „Neue Version – tippen zum Laden“
 
 ## Weitere Entscheidungshelfer
 
@@ -51,14 +53,15 @@ Die Anker (z. B. `…/#rad`) funktionieren auch als eigene Verknüpfung; install
 | `index.html`    | komplette Seite (HTML, CSS, JavaScript) |
 | `manifest.json` | App-Infos für die Installation          |
 | `sw.js`         | Service Worker für die Offline-Nutzung  |
-| `icon.svg`      | App-Icon                                |
+| `icon.svg`      | App-Icon (Browser-Tab, Vorlage für die PNGs) |
+| `icon-*.png`, `apple-touch-icon.png` | App-Icons für Android und iPhone (aus `icon.svg` bzw. `icon-maskable.svg`) |
 
 ## Hosting
 
 Läuft auf GitHub Pages: Repository → *Settings* → *Pages* → Branch `main`, Ordner `/ (root)`.
 
-Nach Änderungen an der Seite in `sw.js` die Cache-Version erhöhen (z. B. `muenzwurf-v3`),
-damit installierte Apps die neue Version laden.
+Änderungen an `index.html` kommen ohne weiteres Zutun bei installierten Apps an, weil die Seite zuerst aus dem Netz geladen wird.
+Nur wenn Dateien dazukommen oder umbenannt werden, in `sw.js` die Liste `ASSETS` anpassen und die Cache-Version erhöhen (z. B. `muenzwurf-v6`).
 
 ## Datenschutz
 

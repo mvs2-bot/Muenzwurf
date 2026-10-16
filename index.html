@@ -8,7 +8,7 @@
 <meta name="theme-color" content="#f4f1ea">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
-<link rel="apple-touch-icon" href="icon.svg">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 <script>
   // Theme früh setzen (kein Aufblitzen). Standard ist hell, dunkel nur nach eigener Wahl.
   try { if (JSON.parse(localStorage.getItem('mw.theme')) === 'dark') { document.documentElement.dataset.theme = 'dark'; document.querySelector('meta[name=theme-color]').content = '#000000'; } } catch (e) {}
@@ -289,6 +289,16 @@
   /* Ergebnis-Pop-Over der Werkzeuge */
   .res-emoji { font-size: 3.2rem; line-height: 1; margin-bottom: 8px; }
   .res-extra { grid-column: 1 / -1; }
+  .share-btn { grid-column: 1 / -1; }
+
+  /* Hinweis: neue Version */
+  .update-toast {
+    position: fixed; left: 50%; bottom: calc(18px + env(safe-area-inset-bottom)); transform: translateX(-50%); z-index: 10;
+    max-width: calc(100vw - 28px); padding: 12px 18px; border-radius: 99px; cursor: pointer; white-space: nowrap;
+    background: var(--text); color: var(--bg); border: 0; font: inherit; font-weight: 800; font-size: .9rem;
+    box-shadow: var(--shadow); animation: popIn .35s cubic-bezier(.2,1.4,.4,1);
+  }
+  .update-toast[hidden] { display: none; }
 
   @media (prefers-reduced-motion: reduce) {
     .coin.spinning { animation-duration: 2.4s; }
@@ -413,6 +423,7 @@
   <section class="team-grid" id="teamOut"></section>
   <div class="team-actions" id="teamActions" hidden>
     <button class="btn" id="teamCopy">📋 Kopieren</button>
+    <button class="btn" id="teamShare" hidden>📤 Teilen</button>
   </div>
 </main>
 
@@ -448,6 +459,7 @@
     <div class="actions">
       <button class="btn" id="closeBtn">Schließen</button>
       <button class="btn primary" id="againBtn">Nochmal werfen</button>
+      <button class="btn share-btn" id="resShare"></button>
     </div>
   </div>
 </dialog>
@@ -463,10 +475,13 @@
     <div class="actions">
       <button class="btn" id="tdClose">Schließen</button>
       <button class="btn primary" id="tdAgain">Nochmal</button>
+      <button class="btn share-btn" id="tdShare"></button>
       <button class="link-btn res-extra" id="tdExtra" hidden></button>
     </div>
   </div>
 </dialog>
+
+<button class="update-toast" id="updateToast" hidden>✨ Neue Version – tippen zum Laden</button>
 
 <script>
 (() => {
@@ -488,6 +503,20 @@
   }
   const randomPicks = (n, k) => Array.from({ length: n }, () => randomInt(k));
   const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+  /* ---------- Teilen (Teilen-Menü des Handys, sonst Zwischenablage) ---------- */
+  const canShare = !!navigator.share;
+  const SHARE_LABEL = canShare ? '📤 Ergebnis teilen' : '📋 Ergebnis kopieren';
+  async function shareText(text, btn) {
+    if (canShare) {
+      try { await navigator.share({ text }); } catch (e) { /* abgebrochen */ }
+      return;
+    }
+    const label = btn.textContent;
+    try { await navigator.clipboard.writeText(text); btn.textContent = '✓ Kopiert'; }
+    catch (e) { btn.textContent = 'Kopieren nicht möglich'; }
+    setTimeout(() => { btn.textContent = label; }, 1600);
+  }
 
   /* ---------- Hilfsfunktionen Ergebnis ---------- */
   function tally(picks, k) { const c = Array(k).fill(0); picks.forEach(p => c[p]++); return c; }
@@ -708,6 +737,8 @@
     });
     box.appendChild(frag);
 
+    resShareText = `🪙 ${$('#resLabel').textContent}: ${win.textContent}\n${$('#resSub').textContent}`
+      + (k > 2 || winner < 0 ? '\n' + e.opts.map((o, i) => `${o}: ${e.counts[i]}`).join(' · ') : '');
     resDlg.showModal();
     requestAnimationFrame(() => requestAnimationFrame(() => {
       fills.forEach((f, i) => f.style.width = pct(e.counts[i]) + '%');
@@ -733,6 +764,9 @@
   $('#goBtn').addEventListener('click', doThrow);
   $('#againBtn').addEventListener('click', doThrow);
   $('#closeBtn').addEventListener('click', () => resDlg.close());
+  let resShareText = '';
+  $('#resShare').textContent = SHARE_LABEL;
+  $('#resShare').addEventListener('click', e => shareText(resShareText, e.currentTarget));
   resDlg.addEventListener('click', e => { if (e.target === resDlg) resDlg.close(); });
 
   /* ---------- Verlauf ---------- */
@@ -801,8 +835,9 @@
   addEventListener('hashchange', route);
 
   /* ---------- Ergebnis-Pop-Over der Werkzeuge ---------- */
-  let toolAgain = null, toolExtra = null;
+  let toolAgain = null, toolExtra = null, toolShareText = '';
   function showToolResult({ emoji, label, win, color, sub, again, extra }) {
+    toolShareText = `${emoji} ${label}: ${win}\n${sub}`;
     $('#tdEmoji').textContent = emoji;
     $('#tdLabel').textContent = label;
     $('#tdWin').textContent = win; $('#tdWin').style.color = col(color);
@@ -814,6 +849,8 @@
     if (navigator.vibrate) navigator.vibrate([40, 60, 90]);
   }
   $('#tdClose').addEventListener('click', () => toolDlg.close());
+  $('#tdShare').textContent = SHARE_LABEL;
+  $('#tdShare').addEventListener('click', e => shareText(toolShareText, e.currentTarget));
   $('#tdAgain').addEventListener('click', () => { toolDlg.close(); toolAgain?.(); });
   $('#tdExtra').addEventListener('click', () => { toolDlg.close(); toolExtra?.(); });
   toolDlg.addEventListener('click', e => { if (e.target === toolDlg) toolDlg.close(); });
@@ -1084,14 +1121,16 @@
   teamNames.addEventListener('input', () => { teams.names = teamNames.value; saveTeams(); teamHint(); });
   chips($('#teamCount'), [2, 3, 4, 5, 6], v => v, teams.k, v => { teams.k = v; saveTeams(); teamHint(); });
   $('#teamGo').addEventListener('click', drawTeams);
+  const teamText = () => teams.last.map((m, i) => `Team ${i + 1}: ${m.join(', ')}`).join('\n');
   $('#teamCopy').addEventListener('click', async () => {
     if (!teams.last) return;
-    const txt = teams.last.map((m, i) => `Team ${i + 1}: ${m.join(', ')}`).join('\n');
     const b = $('#teamCopy');
-    try { await navigator.clipboard.writeText(txt); b.textContent = '✓ Kopiert'; }
+    try { await navigator.clipboard.writeText(teamText()); b.textContent = '✓ Kopiert'; }
     catch (e) { b.textContent = 'Kopieren nicht möglich'; }
     setTimeout(() => { b.textContent = '📋 Kopieren'; }, 1600);
   });
+  $('#teamShare').hidden = !canShare;
+  $('#teamShare').addEventListener('click', e => { if (teams.last) shareText('👥 Teams\n' + teamText(), e.currentTarget); });
   teamHint(); renderTeams(teams.last);
 
   route();
@@ -1100,6 +1139,21 @@
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
   }
+
+  /* ---------- Neue Version? (wenn die App lange im Hintergrund offen war) ---------- */
+  // Vergleicht ETag/Last-Modified der Seite beim Laden mit dem aktuellen Stand auf dem Server.
+  const pageStamp = async () => {
+    const r = await fetch(location.pathname, { method: 'HEAD', cache: 'no-store' });
+    return r.ok ? (r.headers.get('etag') || r.headers.get('last-modified')) : null;
+  };
+  let loadedStamp = null, lastCheck = 0;
+  window.addEventListener('load', () => pageStamp().then(s => { loadedStamp = s; lastCheck = Date.now(); }).catch(() => {}));
+  document.addEventListener('visibilitychange', async () => {
+    if (document.hidden || !loadedStamp || Date.now() - lastCheck < 10 * 60 * 1000) return;
+    lastCheck = Date.now();
+    try { const s = await pageStamp(); if (s && s !== loadedStamp) $('#updateToast').hidden = false; } catch (e) {}
+  });
+  $('#updateToast').addEventListener('click', () => location.reload());
 })();
 </script>
 </body>
