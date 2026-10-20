@@ -1,7 +1,7 @@
 {
   "name": "Münzwurf – Entscheidungshilfe",
   "short_name": "Münzwurf",
-  "description": "Münze werfen – dazu Würfel, Glücksrad, „Wer zahlt?“ und Team-Auslosung",
+  "description": "Münze werfen – dazu Würfel, Glücksrad, „Wer zahlt?“, Team-Auslosung, Zufallsländer und Zufallsorte",
   "lang": "de",
   "start_url": "./",
   "scope": "./",
@@ -72,6 +72,28 @@
     {
       "name": "Team-Auslosung",
       "url": "./#teams",
+      "icons": [
+        {
+          "src": "icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Länder-Auswahl",
+      "url": "./#laender",
+      "icons": [
+        {
+          "src": "icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Zufallsort",
+      "url": "./#ort",
       "icons": [
         {
           "src": "icon-192.png",
