@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Münzwurf</title>
-<meta name="description" content="Entscheidungshilfe: Münze mehrfach werfen, zwei oder mehr Optionen">
+<meta name="description" content="Entscheidungshilfe: Münze mehrfach werfen, Würfel, Glücksrad, Zufallsländer und Zufallsorte">
 <meta name="theme-color" content="#f4f1ea">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
@@ -210,7 +210,7 @@
   .view[hidden], #backBtn[hidden] { display: none; }
 
   section.tools { margin-top: 22px; }
-  .tool-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .tool-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
   .tool {
     display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 12px 4px 10px;
     background: var(--card); border: 1px solid var(--line); border-radius: 14px;
@@ -286,6 +286,41 @@
   .team-actions { display: flex; justify-content: center; gap: 10px; margin-top: 12px; }
   .team-actions .btn { padding: 10px 16px; }
 
+  /* Länder-Auswahl */
+  .land-list { list-style: none; margin: 18px 0 0; padding: 0; display: grid; gap: 6px; counter-reset: land; }
+  .land-item {
+    display: grid; grid-template-columns: 26px 30px 1fr auto; gap: 8px; align-items: center; width: 100%;
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 9px 12px;
+    font-weight: 800; text-align: left; cursor: pointer;
+  }
+  .land-item .nr { color: var(--muted); font-size: .8rem; font-variant-numeric: tabular-nums; }
+  .land-item .flag { font-size: 1.45rem; line-height: 1; }
+  .land-item .cont { color: var(--muted); font-size: .78rem; font-weight: 700; }
+  .land-item.landed { animation: tIn .3s backwards; }
+
+  /* Zufallsort */
+  select {
+    width: 100%; padding: 11px 12px; border-radius: 12px; border: 2px solid var(--line);
+    background: var(--bg2); font: inherit; font-weight: 700; color: inherit; outline: none;
+  }
+  .ort-map {
+    margin-top: 16px; height: 230px; border-radius: 14px; border: 1px solid var(--line); background: var(--bg);
+    display: flex; align-items: center; justify-content: center; padding: 12px; color: var(--muted); font-size: .9rem; text-align: center;
+  }
+  .ort-map svg { width: 100%; height: 100%; overflow: visible; }
+  .ort-map .land { fill: color-mix(in srgb, var(--c4) 20%, transparent); stroke: var(--c4); stroke-width: 1.2; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
+  .ort-map .pin { fill: var(--c1); stroke: var(--card); stroke-width: 2; vector-effect: non-scaling-stroke; }
+  .ort-map .pulse { fill: none; stroke: var(--c1); stroke-width: 2; vector-effect: non-scaling-stroke; transform-box: fill-box; transform-origin: center; animation: pulse 1.6s ease-out infinite; }
+  @keyframes pulse { from { transform: scale(1); opacity: .9; } to { transform: scale(3.2); opacity: 0; } }
+  .ort-res { text-align: center; margin-top: 14px; min-height: 3.4em; }
+  .ort-res b { display: block; font-size: 1.35rem; font-weight: 900; font-variant-numeric: tabular-nums; line-height: 1.25; }
+  .ort-res span { color: var(--muted); font-size: .9rem; }
+  .ort-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
+  .ort-actions[hidden] { display: none; }
+  .ort-actions .btn { text-align: center; text-decoration: none; color: inherit; padding: 11px; }
+  #landTip { text-align: center; }
+  a.mini-item { color: inherit; text-decoration: none; }
+
   /* Ergebnis-Pop-Over der Werkzeuge */
   .res-emoji { font-size: 3.2rem; line-height: 1; margin-bottom: 8px; }
   .res-extra { grid-column: 1 / -1; }
@@ -351,6 +386,8 @@
       <a class="tool" href="#rad"><span class="tool-ico">🎡</span>Glücksrad</a>
       <a class="tool" href="#zahlt"><span class="tool-ico">💸</span>Wer zahlt?</a>
       <a class="tool" href="#teams"><span class="tool-ico">👥</span>Teams</a>
+      <a class="tool" href="#laender"><span class="tool-ico">🌍</span>Länder</a>
+      <a class="tool" href="#ort"><span class="tool-ico">📍</span>Zufallsort</a>
     </nav>
   </section>
 
@@ -425,6 +462,52 @@
     <button class="btn" id="teamCopy">📋 Kopieren</button>
     <button class="btn" id="teamShare" hidden>📤 Teilen</button>
   </div>
+</main>
+
+<!-- Länder-Auswahl -->
+<main class="view" id="view-laender" hidden>
+  <div class="card">
+    <label class="lbl" for="landInput">Wie viele Länder?</label>
+    <div class="count-row" id="landCount">
+      <button class="chip" data-n="1">1</button>
+      <button class="chip" data-n="3">3</button>
+      <button class="chip" data-n="5">5</button>
+      <button class="chip" data-n="10">10</button>
+      <button class="chip" data-n="20">20</button>
+      <input id="landInput" type="number" min="1" max="197" inputmode="numeric" aria-label="Eigene Anzahl">
+    </div>
+    <span class="lbl sec-gap">Aus welchem Erdteil?</span>
+    <div class="chip-row" id="landCont"></div>
+    <div class="hint" id="landHint"></div>
+    <button class="go" id="landGo">🌍 Länder auslosen</button>
+  </div>
+  <ol class="land-list" id="landOut"></ol>
+  <div class="hint" id="landTip" hidden>Land antippen, um dort einen Zufallsort zu bekommen.</div>
+  <div class="team-actions" id="landActions" hidden>
+    <button class="btn" id="landShare"></button>
+  </div>
+</main>
+
+<!-- Zufallsort -->
+<main class="view" id="view-ort" hidden>
+  <div class="card">
+    <label class="lbl" for="ortLand">Land</label>
+    <select id="ortLand"></select>
+    <div class="ort-map" id="ortMap"></div>
+    <div class="ort-res" id="ortRes"></div>
+    <div class="ort-actions" id="ortActions" hidden>
+      <a class="btn" id="ortMapLink" target="_blank" rel="noopener">🗺️ In Karten öffnen</a>
+      <button class="btn" id="ortShare"></button>
+    </div>
+    <button class="go" id="ortGo">📍 Ort auslosen</button>
+  </div>
+  <section class="history">
+    <div class="hist-head">
+      <h2>Letzte Orte</h2>
+      <button class="link-btn" id="ortClear">Löschen</button>
+    </div>
+    <div class="mini-hist" id="ortHist"></div>
+  </section>
 </main>
 
 <footer>Zufall per <code>crypto.getRandomValues</code> · gespeichert nur auf diesem Gerät</footer>
@@ -804,11 +887,12 @@
   renderHistory();
 
   /* =====================================================================
-     Weitere Entscheidungshelfer: Würfel, Glücksrad, Wer zahlt?, Teams
+     Weitere Entscheidungshelfer: Würfel, Glücksrad, Wer zahlt?, Teams, Länder, Zufallsort
      ===================================================================== */
 
-  /* ---------- Navigation (#wuerfel, #rad, #zahlt, #teams) ---------- */
-  const TOOLS = { wuerfel: '🎲 Würfel', rad: '🎡 Glücksrad', zahlt: '💸 Wer zahlt?', teams: '👥 Team-Auslosung' };
+  /* ---------- Navigation (#wuerfel, #rad, #zahlt, #teams, #laender, #ort) ---------- */
+  const TOOLS = { wuerfel: '🎲 Würfel', rad: '🎡 Glücksrad', zahlt: '💸 Wer zahlt?', teams: '👥 Team-Auslosung',
+    laender: '🌍 Länder-Auswahl', ort: '📍 Zufallsort' };
   const toolDlg = $('#toolDlg'), backBtn = $('#backBtn');
   let view = 'coin', fromHome = false;
 
@@ -824,6 +908,7 @@
     if (resDlg.open) resDlg.close();
     if (toolDlg.open) toolDlg.close();
     if (view === 'rad') drawWheel();
+    if (view === 'ort') ortShow();
     scrollTo(0, 0);
   }
   document.querySelectorAll('.tool').forEach(a => a.addEventListener('click', () => { fromHome = true; }));
@@ -1132,6 +1217,222 @@
   $('#teamShare').hidden = !canShare;
   $('#teamShare').addEventListener('click', e => { if (teams.last) shareText('👥 Teams\n' + teamText(), e.currentTarget); });
   teamHint(); renderTeams(teams.last);
+
+  /* ---------- 🌍 Länder (193 UN-Mitglieder + Vatikanstadt, Palästina, Kosovo, Taiwan) ---------- */
+  // Kürzel Name Erdteil – E Europa, A Asien, F Afrika, N Nord- und Mittelamerika, S Südamerika, O Ozeanien
+  const COUNTRIES = 'AF Afghanistan A|EG Ägypten F|AL Albanien E|DZ Algerien F|AD Andorra E|AO Angola F|AG Antigua und Barbuda N|GQ Äquatorialguinea F|AR Argentinien S|AM Armenien A|AZ Aserbaidschan A|ET Äthiopien F|AU Australien O|BS Bahamas N|BH Bahrain A|BD Bangladesch A|BB Barbados N|BY Belarus E|BE Belgien E|BZ Belize N|BJ Benin F|BT Bhutan A|BO Bolivien S|BA Bosnien und Herzegowina E|BW Botswana F|BR Brasilien S|BN Brunei A|BG Bulgarien E|BF Burkina Faso F|BI Burundi F|CL Chile S|CN China A|CR Costa Rica N|CI Côte d’Ivoire F|DK Dänemark E|DE Deutschland E|DM Dominica N|DO Dominikanische Republik N|DJ Dschibuti F|EC Ecuador S|SV El Salvador N|ER Eritrea F|EE Estland E|SZ Eswatini F|FJ Fidschi O|FI Finnland E|FR Frankreich E|GA Gabun F|GM Gambia F|GE Georgien A|GH Ghana F|GD Grenada N|GR Griechenland E|GT Guatemala N|GN Guinea F|GW Guinea-Bissau F|GY Guyana S|HT Haiti N|HN Honduras N|IN Indien A|ID Indonesien A|IQ Irak A|IR Iran A|IE Irland E|IS Island E|IL Israel A|IT Italien E|JM Jamaika N|JP Japan A|YE Jemen A|JO Jordanien A|KH Kambodscha A|CM Kamerun F|CA Kanada N|CV Kap Verde F|KZ Kasachstan A|QA Katar A|KE Kenia F|KG Kirgisistan A|KI Kiribati O|CO Kolumbien S|KM Komoren F|CD Kongo (Dem. Republik) F|CG Kongo (Republik) F|XK Kosovo E|HR Kroatien E|CU Kuba N|KW Kuwait A|LA Laos A|LS Lesotho F|LV Lettland E|LB Libanon A|LR Liberia F|LY Libyen F|LI Liechtenstein E|LT Litauen E|LU Luxemburg E|MG Madagaskar F|MW Malawi F|MY Malaysia A|MV Malediven A|ML Mali F|MT Malta E|MA Marokko F|MH Marshallinseln O|MR Mauretanien F|MU Mauritius F|MX Mexiko N|FM Mikronesien O|MD Moldau E|MC Monaco E|MN Mongolei A|ME Montenegro E|MZ Mosambik F|MM Myanmar A|NA Namibia F|NR Nauru O|NP Nepal A|NZ Neuseeland O|NI Nicaragua N|NL Niederlande E|NE Niger F|NG Nigeria F|KP Nordkorea A|MK Nordmazedonien E|NO Norwegen E|OM Oman A|AT Österreich E|TL Osttimor A|PK Pakistan A|PS Palästina A|PW Palau O|PA Panama N|PG Papua-Neuguinea O|PY Paraguay S|PE Peru S|PH Philippinen A|PL Polen E|PT Portugal E|RW Ruanda F|RO Rumänien E|RU Russland E|SB Salomonen O|ZM Sambia F|WS Samoa O|SM San Marino E|ST São Tomé und Príncipe F|SA Saudi-Arabien A|SE Schweden E|CH Schweiz E|SN Senegal F|RS Serbien E|SC Seychellen F|SL Sierra Leone F|ZW Simbabwe F|SG Singapur A|SK Slowakei E|SI Slowenien E|SO Somalia F|ES Spanien E|LK Sri Lanka A|KN St. Kitts und Nevis N|LC St. Lucia N|VC St. Vincent und die Grenadinen N|ZA Südafrika F|SD Sudan F|KR Südkorea A|SS Südsudan F|SR Suriname S|SY Syrien A|TJ Tadschikistan A|TW Taiwan A|TZ Tansania F|TH Thailand A|TG Togo F|TO Tonga O|TT Trinidad und Tobago N|TD Tschad F|CZ Tschechien E|TN Tunesien F|TR Türkei A|TM Turkmenistan A|TV Tuvalu O|UG Uganda F|UA Ukraine E|HU Ungarn E|UY Uruguay S|UZ Usbekistan A|VU Vanuatu O|VA Vatikanstadt E|VE Venezuela S|AE Vereinigte Arabische Emirate A|US Vereinigte Staaten N|GB Vereinigtes Königreich E|VN Vietnam A|CF Zentralafrikanische Republik F|CY Zypern E'
+    .split('|').map(s => ({ c: s.slice(0, 2), n: s.slice(3, -2), k: s.slice(-1) }));
+  const BY_CODE = Object.fromEntries(COUNTRIES.map(x => [x.c, x]));
+  const CONTS = { all: 'Alle', E: 'Europa', A: 'Asien', F: 'Afrika', N: 'Nordamerika', S: 'Südamerika', O: 'Ozeanien' };
+  const flag = c => String.fromCodePoint(...[...c].map(ch => 0x1F1A5 + ch.charCodeAt(0)));
+  const land = c => `${flag(c)} ${BY_CODE[c].n}`;
+
+  const lands = Object.assign({ n: 5, k: 'all', last: null }, LS.get('mw.laender', {}));
+  const saveLands = () => LS.set('mw.laender', lands);
+  const landInput = $('#landInput');
+  let landBusy = false;
+  const landPool = () => COUNTRIES.filter(x => lands.k === 'all' || x.k === lands.k);
+  const clampLand = v => { v = parseInt(v, 10); return isNaN(v) ? 5 : Math.min(landPool().length, Math.max(1, v)); };
+
+  function setLandCount(n) {
+    lands.n = clampLand(n); landInput.value = lands.n; landInput.max = landPool().length;
+    document.querySelectorAll('#landCount .chip').forEach(c => c.classList.toggle('active', +c.dataset.n === lands.n));
+    const pool = landPool().length;
+    $('#landHint').textContent = lands.n === pool ? `Alle ${pool} Länder in zufälliger Reihenfolge`
+      : `${lands.n} von ${pool} Ländern, keins doppelt`;
+    saveLands();
+  }
+  function renderLands(list, final) {
+    const out = $('#landOut'); out.innerHTML = '';
+    $('#landActions').hidden = $('#landTip').hidden = !final;
+    (list || []).forEach((c, i) => {
+      const li = document.createElement('li'), b = document.createElement('button');
+      b.className = 'land-item' + (final ? ' landed' : '');
+      if (final) b.style.animationDelay = Math.min(i * 0.04, 1) + 's';
+      const nr = document.createElement('span'); nr.className = 'nr'; nr.textContent = i + 1;
+      const fl = document.createElement('span'); fl.className = 'flag'; fl.textContent = flag(c);
+      const nm = document.createElement('span'); nm.textContent = BY_CODE[c].n;
+      const ct = document.createElement('span'); ct.className = 'cont'; ct.textContent = CONTS[BY_CODE[c].k];
+      b.append(nr, fl, nm, ct);
+      b.addEventListener('click', () => { if (landBusy) return; ort.c = c; saveOrt(); location.hash = 'ort'; });
+      li.appendChild(b); out.appendChild(li);
+    });
+  }
+  async function drawLands() {
+    if (landBusy) return; landBusy = true;
+    setLandCount(landInput.value);
+    const pool = landPool().map(x => x.c), n = lands.n;
+    for (let f = 0; f < 10; f++) { renderLands(shuffle(pool).slice(0, n), false); await sleep(90); }
+    lands.last = shuffle(pool).slice(0, n); saveLands();
+    renderLands(lands.last, true);
+    $('#landOut').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    if (navigator.vibrate) navigator.vibrate([40, 60, 90]);
+    landBusy = false;
+  }
+  document.querySelectorAll('#landCount .chip').forEach(c => c.addEventListener('click', () => setLandCount(c.dataset.n)));
+  landInput.addEventListener('change', () => setLandCount(landInput.value));
+  chips($('#landCont'), Object.keys(CONTS), v => CONTS[v], lands.k, v => { lands.k = v; setLandCount(lands.n); });
+  $('#landGo').addEventListener('click', drawLands);
+  $('#landShare').textContent = SHARE_LABEL;
+  $('#landShare').addEventListener('click', e => {
+    if (lands.last) shareText(`🌍 ${lands.last.length === 1 ? 'Zufallsland' : lands.last.length + ' Zufallsländer'}\n`
+      + lands.last.map((c, i) => `${i + 1}. ${land(c)}`).join('\n'), e.currentTarget);
+  });
+  setLandCount(lands.n); renderLands(lands.last, !!lands.last);
+
+  /* ---------- 📍 Zufallsort in einem Land ---------- */
+  // Landesgrenzen (Natural Earth, vereinfacht) liegen in grenzen.json und werden erst hier geladen.
+  // Ein Punkt wird zufällig im Rechteck um eine Insel bzw. einen Landesteil gezogen und nur genommen,
+  // wenn er innerhalb der Grenzen liegt – gewichtet nach Fläche, also überall gleich wahrscheinlich.
+  const ORT_HIST = 10;
+  const ort = Object.assign({ c: 'DE', hist: [], last: null }, LS.get('mw.ort', {}));
+  const saveOrt = () => LS.set('mw.ort', ort);
+  const ortSel = $('#ortLand'), ortMap = $('#ortMap');
+  let grenzen = null, ortBusy = false;
+  const loadGrenzen = () => grenzen || (grenzen = fetch('grenzen.json').then(r => {
+    if (!r.ok) throw new Error(r.status);
+    return r.json();
+  }).catch(e => { grenzen = null; throw e; }));
+
+  const rnd = () => randomInt(0x100000000) / 0x100000000;
+  const cosd = d => Math.cos(d * Math.PI / 180);
+  const normLon = x => ((x + 540) % 360) - 180;
+
+  // Flache Ringe [lon, lat, lon, lat, …] in Polygone mit Bounding-Box und Flächengewicht umwandeln
+  const shapes = {};
+  function shape(data, c) {
+    if (shapes[c]) return shapes[c];
+    let polys = data[c].map(rings => rings.map(f => { const r = []; for (let i = 0; i < f.length; i += 2) r.push([f[i], f[i + 1]]); return r; }));
+    const lons = polys.flatMap(p => p[0].map(q => q[0]));
+    // Länder über die Datumsgrenze (Russland, Fidschi, Kiribati …) zusammenhängend machen
+    if (Math.max(...lons) - Math.min(...lons) > 180)
+      polys = polys.map(p => p[0].every(q => q[0] < 0) ? p.map(r => r.map(([x, y]) => [x + 360, y])) : p);
+    let total = 0;
+    const parts = polys.map(rings => {
+      const xs = rings[0].map(q => q[0]), ys = rings[0].map(q => q[1]);
+      const b = [Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys)];
+      let a = 0; const r = rings[0];
+      for (let i = 0, j = r.length - 1; i < r.length; j = i++) a += (r[j][0] + r[i][0]) * (r[j][1] - r[i][1]);
+      total += Math.abs(a / 2) * cosd((b[1] + b[3]) / 2);
+      return { rings, b, w: total };
+    });
+    const all = parts.map(p => p.b);
+    return shapes[c] = { parts, total, b: [Math.min(...all.map(b => b[0])), Math.min(...all.map(b => b[1])),
+      Math.max(...all.map(b => b[2])), Math.max(...all.map(b => b[3]))] };
+  }
+  function inside(rings, x, y) {
+    let inn = false;
+    for (const r of rings)
+      for (let i = 0, j = r.length - 1; i < r.length; j = i++)
+        if ((r[i][1] > y) !== (r[j][1] > y) && x < (r[j][0] - r[i][0]) * (y - r[i][1]) / (r[j][1] - r[i][1]) + r[i][0]) inn = !inn;
+    return inn;
+  }
+  function randomPoint(s) {
+    const t = rnd() * s.total, p = s.parts.find(q => t < q.w) || s.parts[s.parts.length - 1];
+    const [x0, y0, x1, y1] = p.b, cmax = cosd(Math.min(Math.abs(y0), Math.abs(y1)) * (y0 * y1 > 0 ? 1 : 0));
+    for (let k = 0; k < 20000; k++) {
+      const x = x0 + rnd() * (x1 - x0), y = y0 + rnd() * (y1 - y0);
+      if (rnd() * cmax <= cosd(y) && inside(p.rings, x, y)) return [x, y];
+    }
+    return [(x0 + x1) / 2, (y0 + y1) / 2];
+  }
+
+  // Umriss des Landes als SVG (flächentreu genug: Längengrade mit cos(Breite) gestaucht)
+  let ortProj = null;
+  function drawMap(s, pt) {
+    const [x0, y0, x1, y1] = s.b, k = cosd((y0 + y1) / 2);
+    const w = Math.max((x1 - x0) * k, 0.01), h = Math.max(y1 - y0, 0.01), pad = Math.max(w, h) * 0.04;
+    const P = ([x, y]) => [((x - x0) * k).toFixed(4), (y1 - y).toFixed(4)];
+    ortProj = { P, r: Math.max(w, h) * 0.022 };
+    const d = s.parts.map(p => p.rings.map(r => 'M' + r.map(q => P(q).join(',')).join('L') + 'Z').join('')).join('');
+    ortMap.innerHTML = `<svg viewBox="${-pad} ${-pad} ${w + 2 * pad} ${h + 2 * pad}" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Umriss">
+      <path class="land" fill-rule="evenodd" d="${d}"/><g id="ortPin"></g></svg>`;
+    if (pt) setPin(pt, true);
+  }
+  function setPin([x, y], final) {
+    const g = ortMap.querySelector('#ortPin'); if (!g || !ortProj) return;
+    const [px, py] = ortProj.P([x, y]), r = ortProj.r;
+    g.innerHTML = (final ? `<circle class="pulse" cx="${px}" cy="${py}" r="${r}"/>` : '')
+      + `<circle class="pin" cx="${px}" cy="${py}" r="${r}"/>`;
+  }
+
+  const fmt = (v, pos, neg) => `${Math.abs(v).toFixed(5).replace('.', ',')}° ${v >= 0 ? pos : neg}`;
+  const coords = p => `${p.lat.toFixed(5)}, ${p.lon.toFixed(5)}`;
+  const mapsUrl = p => `https://www.google.com/maps/search/?api=1&query=${p.lat.toFixed(5)},${p.lon.toFixed(5)}`;
+
+  function showOrt(p) {
+    const box = $('#ortRes'); box.innerHTML = '';
+    $('#ortActions').hidden = !p;
+    if (!p) return;
+    const b = document.createElement('b'), sp = document.createElement('span');
+    b.textContent = `${fmt(p.lat, 'N', 'S')} · ${fmt(p.lon, 'O', 'W')}`;
+    sp.textContent = `Zufallsort in ${land(p.c)}`;
+    box.append(b, sp);
+    $('#ortMapLink').href = mapsUrl(p);
+  }
+  function renderOrtHist() {
+    const list = $('#ortHist'); list.innerHTML = '';
+    $('#ortClear').style.display = ort.hist.length ? '' : 'none';
+    if (!ort.hist.length) {
+      const d = document.createElement('div'); d.className = 'empty'; d.textContent = 'Noch kein Ort ausgelost.'; list.appendChild(d); return;
+    }
+    ort.hist.forEach(p => {
+      const a = document.createElement('a'); a.className = 'mini-item'; a.href = mapsUrl(p); a.target = '_blank'; a.rel = 'noopener';
+      const l = document.createElement('span'); l.textContent = land(p.c);
+      const r = document.createElement('b'); r.textContent = coords(p);
+      a.append(l, r); list.appendChild(a);
+    });
+  }
+
+  // Aktuelles Land zeigen (Umriss + letzter Punkt, falls er zu diesem Land gehört)
+  async function ortShow() {
+    if (ortBusy) return;
+    ortSel.value = ort.c;
+    const last = ort.last && (ort.c === '*' || ort.last.c === ort.c) ? ort.last : null;
+    showOrt(last);
+    const c = last ? last.c : ort.c;
+    if (c === '*') { ortMap.textContent = '🎲 Das Land wird mit ausgelost.'; return; }
+    try {
+      const data = await loadGrenzen();
+      if (ortBusy) return;
+      drawMap(shape(data, c), last && [last.lon, last.lat]);
+    } catch (e) {
+      ortMap.textContent = 'Die Landkarte konnte nicht geladen werden. Einmal mit Internet öffnen, danach geht es auch offline.';
+    }
+  }
+  async function drawOrt() {
+    if (ortBusy) return;
+    let data;
+    try { data = await loadGrenzen(); } catch (e) { ortShow(); return; }
+    ortBusy = true; ortSel.disabled = true; showOrt(null);
+    const c = ort.c === '*' ? COUNTRIES[randomInt(COUNTRIES.length)].c : ort.c;
+    if (ort.c === '*') { // erst das Land, dann den Ort auslosen
+      for (let f = 0; f < 12; f++) { ortMap.textContent = land(COUNTRIES[randomInt(COUNTRIES.length)].c); await sleep(70 + f * 8); }
+      ortMap.textContent = land(c); await sleep(450);
+    }
+    const s = shape(data, c), pt = randomPoint(s);
+    drawMap(s);
+    for (let f = 0; f < 9; f++) { setPin(randomPoint(s)); await sleep(90 + f * 15); }
+    setPin(pt, true);
+    const p = { c, lat: +pt[1].toFixed(5), lon: +normLon(pt[0]).toFixed(5) };
+    ort.last = p; ort.hist.unshift(p); ort.hist = ort.hist.slice(0, ORT_HIST); saveOrt();
+    showOrt(p); renderOrtHist();
+    if (navigator.vibrate) navigator.vibrate([40, 60, 90]);
+    ortSel.disabled = false; ortBusy = false;
+  }
+
+  [{ c: '*', n: '🎲 Zufälliges Land' }, ...[...COUNTRIES].sort((a, b) => a.n.localeCompare(b.n, 'de'))].forEach(x => {
+    const o = document.createElement('option'); o.value = x.c; o.textContent = x.c === '*' ? x.n : land(x.c); ortSel.appendChild(o);
+  });
+  if (!BY_CODE[ort.c] && ort.c !== '*') ort.c = 'DE';
+  ortSel.addEventListener('change', () => { ort.c = ortSel.value; saveOrt(); ortShow(); });
+  $('#ortGo').addEventListener('click', drawOrt);
+  $('#ortShare').textContent = SHARE_LABEL;
+  $('#ortShare').addEventListener('click', e => {
+    const p = ort.last; if (p) shareText(`📍 Zufallsort in ${land(p.c)}\n${coords(p)}\n${mapsUrl(p)}`, e.currentTarget);
+  });
+  $('#ortClear').addEventListener('click', () => { ort.hist = []; saveOrt(); renderOrtHist(); });
+  renderOrtHist();
 
   route();
 
