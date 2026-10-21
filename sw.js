@@ -1,8 +1,8 @@
 // Münzwurf – Service Worker (offline-fähig)
 // Die Seite selbst kommt immer zuerst aus dem Netz, eine Versionsnummer muss dafür nicht erhöht werden.
 // Nur bei Änderungen an ASSETS (neue oder umbenannte Dateien) die Cache-Version erhöhen.
-const CACHE = 'muenzwurf-v6';
-const ASSETS = ['./', './index.html', './manifest.json', './icon.svg',
+const CACHE = 'muenzwurf-v7';
+const ASSETS = ['./', './index.html', './shared/ios-nav.js', './manifest.json', './icon.svg',
   './icon-192.png', './icon-512.png', './icon-maskable-512.png', './apple-touch-icon.png', './grenzen.json'];
 const NET_TIMEOUT = 3000; // so lange auf das Netz warten, danach die gespeicherte Seite zeigen
 
