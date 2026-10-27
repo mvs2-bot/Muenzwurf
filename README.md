@@ -62,12 +62,19 @@ Die Anker (z. B. `…/#rad`) funktionieren auch als eigene Verknüpfung; install
 | `icon.svg`      | App-Icon (Browser-Tab, Vorlage für die PNGs) |
 | `icon-*.png`, `apple-touch-icon.png` | App-Icons für Android und iPhone (aus `icon.svg` bzw. `icon-maskable.svg`) |
 
+## Design
+
+Apple-Designsprache wie die übrigen Apps (Vorbild „Zuhause“): Systemschrift, 12–22 px (Basis 14 px),
+weiße Karten auf `#f2f2f7`, im Dunkeln dunkelgraue Karten (`#1c1c1e`) auf Schwarz, Linien-Symbole als SVG-Sprite im `body` statt Emojis.
+Akzent ist Türkis (`#007a87` hell, `#40c8e0` dunkel); die Optionen A–F nutzen Apples kontrastsichere Systemfarben (`--c0` … `--c5`).
+Screenshots liegen in `docs/`.
+
 ## Hosting
 
 Läuft auf GitHub Pages: Repository → *Settings* → *Pages* → Branch `main`, Ordner `/ (root)`.
 
 Änderungen an `index.html` kommen ohne weiteres Zutun bei installierten Apps an, weil die Seite zuerst aus dem Netz geladen wird.
-Nur wenn Dateien dazukommen oder umbenannt werden, in `sw.js` die Liste `ASSETS` anpassen und die Cache-Version erhöhen (z. B. `muenzwurf-v7`).
+Nur wenn Dateien dazukommen oder umbenannt werden, in `sw.js` die Liste `ASSETS` anpassen und die Cache-Version erhöhen (z. B. `muenzwurf-v9`).
 
 ## Woher die Landesgrenzen kommen
 
